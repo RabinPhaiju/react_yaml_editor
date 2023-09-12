@@ -37,7 +37,7 @@ const yamlLinter = linter((view) => {
   return diagnostics;
 });
 
-export function YamlEditor({data,onChange,previewYaml,readOnly=false}) {
+export function YamlEditor({data,onChange,previewYaml,suggestions,readOnly=false}) {
 
   function _onChange(value) {
       // let value_object = parser.load(value);
@@ -53,12 +53,7 @@ export function YamlEditor({data,onChange,previewYaml,readOnly=false}) {
   }
 
   const yamlAutocomplete = autocompletion({
-    override: [completeFromList(
-      [
-        "apple",
-        "switch_case:\n     case: '{{ gender }}'\n     options:\n       male:\n         - text: 'girl'"
-      ]
-      )]
+    override: [completeFromList(suggestions)]
   });
 
   const extensions = [
@@ -81,6 +76,11 @@ export function YamlEditor({data,onChange,previewYaml,readOnly=false}) {
     }
   };
 
+  const handleKeyUp = (event) => {
+    if (event.key === '{' ) {
+    }
+  };
+
   return (
     <div className="code_mirror">
       <CodeMirror
@@ -95,7 +95,7 @@ export function YamlEditor({data,onChange,previewYaml,readOnly=false}) {
           foldKeymap: true,
         }}
         onKeyDown={hanleKeyPress}
-        // onKeyUp={handleKeyUp}
+        onKeyUp={handleKeyUp}
       />
     </div>
   );

@@ -3,6 +3,7 @@ import "./App.css";
 import parser from "js-yaml";
 import { YamlEditor } from "./yamlEditor";
 import yaml from 'yaml';
+import getKeys from "./getKeys";
 
 export default function App() {
   const [ data, setData ] = useState(`
@@ -57,12 +58,15 @@ export default function App() {
 `
   );
 
+  const [suggestions, setSuggestions] = useState([]);
   const [dataObject, setDataObject] = useState([]);
 
   useEffect(() => {
     // let value = parser.load(data);
     let value = parser.loadAll(data)[0];
-    console.log(value);
+    let _suggestions = value.flatMap(obj => getKeys(obj));
+    setSuggestions(_suggestions);
+    
     // setDataObject(value); 
 
 
@@ -73,13 +77,18 @@ export default function App() {
 
     // split first array
     let document = yaml.parseDocument(data);
-    let firstDocument = document.contents.items[2];
+    let firstDocument = document.contents.items[0];
     let firstDocumentString = yaml.stringify([firstDocument]);
     // console.log(firstDocumentString);
     setDataObject(firstDocumentString);
 
+    // split except first array
+    let exceptfirstDocument = document.contents.items.slice(1);
+    let exceptfirstDocumentString = yaml.stringify(exceptfirstDocument);
+    setData(exceptfirstDocumentString);
 
-  },[data])
+
+  },[])
 
   const previewYaml = () => {
     console.log(data);
@@ -95,10 +104,11 @@ export default function App() {
               } onChange={setData} previewYaml={previewYaml} readOnly={true} /> */}
 
           <YamlEditor 
-          data={ dataObject?.length > 0 ? dataObject : '' } onChange={()=>{}} previewYaml={previewYaml}/>
+          data={ dataObject?.length > 0 ? dataObject : '' } 
+          onChange={()=>{}} previewYaml={previewYaml} suggestions={suggestions} />
           <span>Templates</span>
         </div>
-          <YamlEditor data={data} onChange={setData} previewYaml={previewYaml} />
+          <YamlEditor data={data} onChange={setData} previewYaml={previewYaml} suggestions={suggestions} />
         </div>
     </div>
   );
