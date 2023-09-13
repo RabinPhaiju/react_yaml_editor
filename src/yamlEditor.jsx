@@ -64,9 +64,6 @@ export function YamlEditor({data,onChange,previewYaml,suggestions,readOnly=false
   function checkBracketPair(context){
     let isPair = true;
     let match_before = context.matchBefore(/.*}.*/);
-
-    console.log('text',match_before?.text);
-
     if(match_before != null && match_before.text.includes('}')){
       isPair = isBracketsBalanced(match_before.text.slice(0, -2));
       console.log(isPair);
@@ -76,19 +73,23 @@ export function YamlEditor({data,onChange,previewYaml,suggestions,readOnly=false
 
   function myCompletions(context) {
     let word = context.matchBefore(/\w*/);
-    
     if (word.from == word.to && !context.explicit){ return null}
     if(
         // context.matchBefore(/:.*/) || 
         // context.matchBefore(/.*:/) ||
-        ( ( context.matchBefore(/{{\s+ \w+/) !=null || context.matchBefore(/{{\w+/) !=null ) && checkBracketPair(context) )
+        ( 
+          ( context.matchBefore(/{{\s+ \w+/) !=null || 
+            context.matchBefore(/{{\w+/) !=null 
+          ) && 
+            checkBracketPair(context) 
+            )
         ){
         return {
         from: word.from,
         options: suggestions
       }
     }
-    if(context.matchBefore(/- .*/) !=null && !context.matchBefore(/:.*/) !=null){
+    if(context.matchBefore(/- .*/) !=null && !(context.matchBefore(/:.*/) !=null) ){
       return {
         from: word.from,
         options: [
