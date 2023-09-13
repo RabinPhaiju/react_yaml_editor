@@ -1,13 +1,16 @@
-import React from "react";
+import React,{useRef,useEffect,createRef} from "react";
 import { linter, lintGutter } from "@codemirror/lint";
-import CodeMirror from "@uiw/react-codemirror";
+import CodeMirror,{useCodeMirror} from "@uiw/react-codemirror";
 import * as yamlMode from "@codemirror/legacy-modes/mode/yaml";
 import { StreamLanguage } from "@codemirror/language";
 import parser from "js-yaml";
-import { githubLight } from "@uiw/codemirror-theme-github";
+import { githubLight,githubDark } from "@uiw/codemirror-theme-github";
 import "./codeMirror.css";
-import {EditorState} from "@codemirror/state";
-import foldOnIndent from "./foldIndent"
+import {EditorState,EditorSelection} from "@codemirror/state";
+// import { EditorView } from "@codemirror/view";
+import {keymap } from "@codemirror/view";
+import foldOnIndent from "./foldIndent";
+import {syntaxTree} from "@codemirror/language";
 import {
   autocompletion,
   completeFromList,
@@ -38,6 +41,8 @@ const yamlLinter = linter((view) => {
 });
 
 export function YamlEditor({data,onChange,previewYaml,suggestions,readOnly=false}) {
+  const editorRef = createRef();
+  const valueRef = useRef(data);
 
   function _onChange(value) {
       // let value_object = parser.load(value);
@@ -56,13 +61,52 @@ export function YamlEditor({data,onChange,previewYaml,suggestions,readOnly=false
     override: [completeFromList(suggestions)]
   });
 
+  function myCompletions(context) {
+    let word = context.matchBefore(/\w*/)
+    if (word.from == word.to && !context.explicit)
+      return null
+    if(context.matchBefore(/:.*/) || context.matchBefore(/{.*/)  || context.matchBefore(/.*:/)){
+        return {
+        from: word.from,
+        options: [
+          {label: "match", type: "text"},
+          {label: "magic", type: "text", apply: "jadu", detail: "local"}
+        ],
+      }
+    }
+    if(context.matchBefore(/- .*/)){
+      return {
+        from: word.from,
+        options: [
+          {label: "template", type: "keyword", apply:'template: '},      
+          {label: "name", type: "keyword", apply:'name: '},       
+          {label: "switch_case", type: "keyword", apply:'switch_case: '},
+          {label: "text", type: "keyword", apply:'text: '},    
+        ],
+      }
+    }
+    return {
+      from: word.from,
+      options: [
+        {label: "case", type: "text", apply:'case: '},      
+        {label: "options", type: "keyword", apply:'options: '},       
+        {label: "content", type: "keyword", apply:'content: '},      
+      ],
+    }
+  }
+
   const extensions = [
     yaml,
     lintGutter(),
     yamlLinter,
     EditorState.readOnly.of(readOnly),
     // EditorState.allowMultipleSelections.of(true),
-    yamlAutocomplete,
+    // yamlAutocomplete,
+    // keymap.of([{ key: '{', run: yamlAutocomplete },]),
+    autocompletion({
+      override: [myCompletions],
+      // compareCompletions: (a, b) => a.from - b.from
+    })
   ]
 
   if(!readOnly){
@@ -77,20 +121,45 @@ export function YamlEditor({data,onChange,previewYaml,suggestions,readOnly=false
   };
 
   const handleKeyUp = (event) => {
-    if (event.key === '{' ) {
+    if (event.key === '[' ) {
     }
   };
 
+  // const { setContainer } = useCodeMirror({
+  //   container: editor.current,
+  //   extensions: extensions,
+  //   value: data,
+  // });
+
+  // useEffect(() => {
+  //   if(editor.current){
+  //     setContainer(editor.current);
+  //   }
+
+  // },[editor.current])
+
   return (
     <div className="code_mirror">
+      {/* <div ref={editor}/> */}
       <CodeMirror
+        ref={editorRef}
         height= {readOnly ? '200px' : null}
         onChange={_onChange}
         value={data}
-        theme={githubLight}
+        theme={ readOnly? githubDark : githubLight}
+        options={{
+          extraKeys: {
+            "'@'": function (cm) {
+              console.log("hit");
+            },
+          },
+        }}
         extensions={extensions}
+        // selection={EditorSelection.cursor(50)}
+        
         basicSetup= {{
           lineNumbers: true,
+          lineWrapping: true,
           foldGutter: true,
           foldKeymap: true,
         }}

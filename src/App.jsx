@@ -57,15 +57,22 @@ export default function App() {
               - text: 'him'
 `;
 
+  const defaultSuggestions = [ 
+    'paragraph: |\n    ', 
+    '- text',
+    'switch_case',
+
+  ]; 
+
   const [ data, setData ] = useState('')
-  const [suggestions, setSuggestions] = useState([]);
+  const [suggestions, setSuggestions] = useState(defaultSuggestions);
   const [dataObject, setDataObject] = useState([]);
 
   useEffect(() => {
     // let value = parser.load(data);
     let value = parser.loadAll(templateData)[0];
     let _suggestions = value.flatMap(obj => getKeys(obj));
-    setSuggestions(_suggestions);
+    setSuggestions(prev => [...prev,..._suggestions]);
     
     // setDataObject(value); 
 
@@ -82,7 +89,7 @@ export default function App() {
     // console.log(firstDocumentString);
     setDataObject(firstDocumentString);
 
-    addNewReference(firstDocumentString,setDataObject);
+    // addNewReference(firstDocumentString);
 
     // split except first array
     let exceptfirstDocument = document.contents.items.slice(1);
@@ -92,8 +99,8 @@ export default function App() {
 
   },[])
 
-  const addNewReference = (data,set) => {
-    let value = parser.loadAll(data)[0];    
+  const addNewReference = () => {
+    let value = parser.loadAll(dataObject)[0];    
     let references = value[0];
 
     references['references'].push({
@@ -108,7 +115,7 @@ export default function App() {
       ]
     });
     references = yaml.stringify([references]);
-    set(references);
+    setDataObject(references);
   }
 
   const previewYaml = () => {
@@ -120,7 +127,8 @@ export default function App() {
     <div className="App">
         <div style={{position:'relative'}} >
         <div style={{position:'sticky', top:'0px',zIndex:'1',backgroundColor:'#fff'}}>
-            <span>References</span>
+            <span>References</span> &nbsp;
+            <button onClick={addNewReference}>Add New Reference</button>
             {/* <YamlEditor data={ 
               (data.length > 0 && dataObject?.length > 0 ) ? parser.dump([dataObject[1]]): ''
               } onChange={setData} previewYaml={previewYaml} readOnly={true} /> */}
