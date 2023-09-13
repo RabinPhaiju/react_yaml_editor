@@ -1,6 +1,7 @@
 import React,{useRef,useEffect,createRef} from "react";
 import { linter, lintGutter } from "@codemirror/lint";
 import CodeMirror,{useCodeMirror} from "@uiw/react-codemirror";
+// import * as events from '@uiw/codemirror-extensions-events';
 import * as yamlMode from "@codemirror/legacy-modes/mode/yaml";
 import { StreamLanguage } from "@codemirror/language";
 import parser from "js-yaml";
@@ -8,13 +9,11 @@ import { githubLight,githubDark } from "@uiw/codemirror-theme-github";
 import "./codeMirror.css";
 import {EditorState,EditorSelection} from "@codemirror/state";
 // import { EditorView } from "@codemirror/view";
-import {keymap } from "@codemirror/view";
+import {keymap,EditorView } from "@codemirror/view";
+import {defaultKeymap} from "@codemirror/commands"
 import foldOnIndent from "./foldIndent";
 import {syntaxTree} from "@codemirror/language";
-import {
-  autocompletion,
-  completeFromList,
-} from "@codemirror/autocomplete";
+import {autocompletion,completeFromList,} from "@codemirror/autocomplete";
 import isBracketsBalanced from "./checkBracketsBalanced";
 
 const yaml = StreamLanguage.define(yamlMode.yaml);
@@ -76,23 +75,20 @@ export function YamlEditor({data,onChange,previewYaml,suggestions,readOnly=false
   }
 
   function myCompletions(context) {
-    let word = context.matchBefore(/\w*/)
-    // console.log(context.matchBefore(/{.*/));
+    let word = context.matchBefore(/\w*/);
     
-    if (word.from == word.to && !context.explicit)
-      return null
+    if (word.from == word.to && !context.explicit){ return null}
     if(
         // context.matchBefore(/:.*/) || 
         // context.matchBefore(/.*:/) ||
-        ( context.matchBefore(/{{/) && checkBracketPair(context) )
-        // ( context.matchBefore(/{.*/) && !context.matchBefore(/}.*/) )
+        ( ( context.matchBefore(/{{\s+ \w+/) !=null || context.matchBefore(/{{\w+/) !=null ) && checkBracketPair(context) )
         ){
         return {
         from: word.from,
         options: suggestions
       }
     }
-    if(context.matchBefore(/- .*/) && !context.matchBefore(/:.*/)){
+    if(context.matchBefore(/- .*/) !=null && !context.matchBefore(/:.*/) !=null){
       return {
         from: word.from,
         options: [
@@ -113,18 +109,25 @@ export function YamlEditor({data,onChange,previewYaml,suggestions,readOnly=false
     }
   }
 
+  function moveToLine(view) {
+    let line = prompt("Which line?")
+    if (!/^\d+$/.test(line) || +line <= 0 || +line > view.state.doc.lines)
+      return false
+    let pos = view.state.doc.line(+line).from
+    view.dispatch({selection: {anchor: pos}, userEvent: "select"})
+    return true
+  }
+
   const extensions = [
     yaml,
     lintGutter(),
     yamlLinter,
     EditorState.readOnly.of(readOnly),
     // EditorState.allowMultipleSelections.of(true),
-    // yamlAutocomplete,
-    // keymap.of([{ key: '{', run: yamlAutocomplete },]),
-    autocompletion({
-      override: [myCompletions],
-      // compareCompletions: (a, b) => a.from - b.from
-    })
+    // yamlAutocomplete,,
+    // keymap.of(defaultKeymap),
+    keymap.of([{ key: 'CTRL-l', run: moveToLine },]),
+    autocompletion({ override: [myCompletions],}),
   ]
 
   if(!readOnly){
@@ -138,8 +141,8 @@ export function YamlEditor({data,onChange,previewYaml,suggestions,readOnly=false
     }
   };
 
-  const handleKeyUp = (event) => {
-    if (event.key === '[' ) {
+  const handleKeyUp = (e) => {
+    if (e.key === '[' ) {
     }
   };
 
@@ -165,13 +168,6 @@ export function YamlEditor({data,onChange,previewYaml,suggestions,readOnly=false
         onChange={_onChange}
         value={data}
         theme={ readOnly? githubDark : githubLight}
-        options={{
-          extraKeys: {
-            "'@'": function (cm) {
-              console.log("hit");
-            },
-          },
-        }}
         extensions={extensions}
         // selection={EditorSelection.cursor(50)}
         
