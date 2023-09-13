@@ -15,6 +15,7 @@ import {
   autocompletion,
   completeFromList,
 } from "@codemirror/autocomplete";
+import isBracketsBalanced from "./checkBracketsBalanced";
 
 const yaml = StreamLanguage.define(yamlMode.yaml);
 
@@ -61,23 +62,42 @@ export function YamlEditor({data,onChange,previewYaml,suggestions,readOnly=false
     override: [completeFromList(suggestions)]
   });
 
+  function checkBracketPair(context){
+    let isPair = true;
+    let match_before = context.matchBefore(/.*}.*/);
+
+    console.log('text',match_before?.text);
+
+    if(match_before != null && match_before.text.includes('}')){
+      isPair = isBracketsBalanced(match_before.text.slice(0, -2));
+      console.log(isPair);
+    }
+    return isPair;
+  }
+
   function myCompletions(context) {
     let word = context.matchBefore(/\w*/)
+    // console.log(context.matchBefore(/{.*/));
+    
     if (word.from == word.to && !context.explicit)
       return null
-    if(context.matchBefore(/:.*/) || context.matchBefore(/{.*/)  || context.matchBefore(/.*:/)){
+    if(
+        // context.matchBefore(/:.*/) || 
+        // context.matchBefore(/.*:/) ||
+        ( context.matchBefore(/{{/) && checkBracketPair(context) )
+        // ( context.matchBefore(/{.*/) && !context.matchBefore(/}.*/) )
+        ){
         return {
         from: word.from,
-        options: [
-          {label: "match", type: "text"},
-          {label: "magic", type: "text", apply: "jadu", detail: "local"}
-        ],
+        options: suggestions
       }
     }
-    if(context.matchBefore(/- .*/)){
+    if(context.matchBefore(/- .*/) && !context.matchBefore(/:.*/)){
       return {
         from: word.from,
         options: [
+          {label: "match", type: "text"},
+          {label: "magic", type: "text", apply: "jadu", detail: "local"},
           {label: "template", type: "keyword", apply:'template: '},      
           {label: "name", type: "keyword", apply:'name: '},       
           {label: "switch_case", type: "keyword", apply:'switch_case: '},
@@ -88,9 +108,7 @@ export function YamlEditor({data,onChange,previewYaml,suggestions,readOnly=false
     return {
       from: word.from,
       options: [
-        {label: "case", type: "text", apply:'case: '},      
-        {label: "options", type: "keyword", apply:'options: '},       
-        {label: "content", type: "keyword", apply:'content: '},      
+        {label: "no match found", type: "text"},
       ],
     }
   }

@@ -1,4 +1,4 @@
-export default function getAllKeys(obj) {
+export default function getAllKeys(obj,type='text',detail = 'local') {
     let keys = [];
     const pattern = /\d+\./g;
   
@@ -9,7 +9,7 @@ export default function getAllKeys(obj) {
           recurse(obj[key], newKey);
         } else {
           newKey = newKey.replace(pattern, '');
-          keys.push(newKey);
+          keys.push( {label: newKey, type: type, apply: newKey, detail: detail});
         }
       }
     }
