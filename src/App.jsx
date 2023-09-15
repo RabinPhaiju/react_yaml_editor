@@ -192,6 +192,7 @@ const genericSuggestion = {
 
   const [ data, setData ] = useState('')
   const [suggestions, setSuggestions] = useState(defaultSuggestions);
+  const [anchorSuggestions,setAnchorSuggestions] = useState();
   const [dataObject, setDataObject] = useState([]);
 
   useEffect(() => {
@@ -227,6 +228,19 @@ const genericSuggestion = {
 
 
   },[])
+
+  useEffect(()=>{
+    const regex = new RegExp(/&\w*-\w*/,'g');
+    let newData = data.match(regex);
+    if(newData !=null){
+      const _anchorSuggestions = [];
+      newData.forEach(anchor=>{
+         anchor = anchor.substring(1);
+        _anchorSuggestions.push({label: anchor, type: 'text', apply: anchor, detail: 'anchor'});
+      })
+      setAnchorSuggestions(_anchorSuggestions);
+    }
+  },[data])
 
   const addNewReference = () => {
     let value = parser.loadAll(dataObject)[0];    
@@ -268,7 +282,13 @@ const genericSuggestion = {
           />
           <span>Templates</span>
         </div>
-          <YamlEditor data={data.length > 0 ? data : ''} onChange={setData} previewYaml={previewYaml} suggestions={suggestions} />
+          <YamlEditor 
+            data={data.length > 0 ? data : ''} 
+            onChange={setData} 
+            previewYaml={previewYaml} 
+            suggestions={suggestions} 
+            anchorSuggestions = {anchorSuggestions}
+            />
         </div>
     </div>
   );

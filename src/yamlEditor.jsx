@@ -1,4 +1,4 @@
-import React,{useRef,useEffect,createRef} from "react";
+import React,{useRef,useEffect,createRef, useState} from "react";
 import { linter, lintGutter } from "@codemirror/lint";
 import CodeMirror,{useCodeMirror} from "@uiw/react-codemirror";
 // import * as events from '@uiw/codemirror-extensions-events';
@@ -39,7 +39,15 @@ const yamlLinter = linter((view) => {
   return diagnostics;
 });
 
-export function YamlEditor({data,onChange,previewYaml,suggestions,readOnly=false}) {
+export function YamlEditor({
+  data,
+  onChange,
+  previewYaml,
+  suggestions,
+  anchorSuggestions=[],
+  readOnly=false
+}) {
+  const [yamlError,setYamlError] = useState(null);
   const editorRef = createRef();
   const valueRef = useRef(data);
 
@@ -51,8 +59,10 @@ export function YamlEditor({data,onChange,previewYaml,suggestions,readOnly=false
       try{
         parser.loadAll(value);
         onChange(value);
+        setYamlError(null)
       }catch(e){
         console.log(e);
+        setYamlError(e?.mark?.snippet)
       }
   }
 
@@ -68,14 +78,21 @@ export function YamlEditor({data,onChange,previewYaml,suggestions,readOnly=false
   function myCompletions(context) {
     let word = context.matchBefore(/\w*/);
     let bracket = context.matchBefore(/{.*/);
+    let anchor = context.matchBefore(/\*.*/);
     let newLine = context.matchBefore(/\s*-\s\w*/);
+
+    let test = context.matchBefore(/{{#\w+/);
+
+    console.log('----------',test);
 
     console.log('newline',newLine);
     console.log('word',word);
     console.log('bracket',bracket);
+    console.log('anchor',anchor);
 
     if (word.from == word.to && !context.explicit){ return null}
     if (bracket !=null && bracket.from == bracket.to && !context.explicit){ return null}
+    if (anchor !=null && anchor.from == anchor.to && !context.explicit){ return null}
     let newGaps = " ".repeat(4);
     let siblingGaps = " ".repeat(2);
     if(newLine!=null){ 
@@ -83,18 +100,11 @@ export function YamlEditor({data,onChange,previewYaml,suggestions,readOnly=false
       siblingGaps = siblingGaps + newLine.text.split('-')[0]; 
     }
 
-    if(
-        // context.matchBefore(/:.*/) || 
-        // context.matchBefore(/.*:/) ||
-        ( 
-          ( context.matchBefore(/{{\s+ \w+/) !=null || 
-            context.matchBefore(/{{\w+/) !=null ||
-            context.matchBefore(/{{\s+/) !=null ||
-            context.matchBefore(/{{/) !=null
-          ) && 
-            checkBracketPair(context) 
-            )
-        ){
+    if((( context.matchBefore(/{{\s+ \w+/) !=null || 
+        context.matchBefore(/{{\w+/) !=null ||
+        context.matchBefore(/{{\s+/) !=null ||
+        context.matchBefore(/{{/) !=null
+      ) &&  checkBracketPair(context) ) ){
         return {
         from: word.from,
         options: suggestions
@@ -122,23 +132,41 @@ export function YamlEditor({data,onChange,previewYaml,suggestions,readOnly=false
         ],
       }
     }
-    if(!(context.matchBefore(/:.*/) !=null) ){
-      return {
-        from: word.from,
-        options: [
-          {label: "worse", type: "keyword", apply:`worse: ` , detail: "local"},
-          {label: "bad", type: "keyword", apply:`bad: ` , detail: "local"},
-          {label: "average", type: "keyword", apply:`average: ` , detail: "local"},
-          {label: "good", type: "keyword", apply:`good: ` , detail: "local"},
-          {label: "excellent", type: "keyword", apply:`excellent: ` , detail: "local"},
+
+    if(context.matchBefore(/\*.*/) !=null){ return { from: word.from,options: anchorSuggestions }}
+    
+    if(context.matchBefore(/{{>\w+/) !=null || context.matchBefore(/{{>/) !=null){ 
+      return {from: word.from,options: [
+          {label: "greater1", type: "text"},
+          {label: "greater2", type: "text"},
         ],
+      }}
+
+    if(context.matchBefore(/{{#\w+/) !=null || context.matchBefore(/{{#/) !=null){ 
+      return {from: word.from,options: [
+          {label: "sharp1", type: "text"},
+          {label: "share2", type: "text"},
+        ],
+      }}
+
+      if(
+        !(context.matchBefore(/:.*/) !=null) &&
+        !(context.matchBefore(/{.*/) !=null) 
+        ){
+        return { from: word.from, options: [
+            {label: "worse", type: "keyword", apply:`worse: ` , detail: "local"},
+            {label: "bad", type: "keyword", apply:`bad: ` , detail: "local"},
+            {label: "average", type: "keyword", apply:`average: ` , detail: "local"},
+            {label: "good", type: "keyword", apply:`good: ` , detail: "local"},
+            {label: "excellent", type: "keyword", apply:`excellent: ` , detail: "local"},
+          ],}
       }
-    }
+    
     return {
       from: word.from,
       options: [
         {label: "no match found", type: "text"},
-      
+        {label: "check suggestion rules", type: "text"},
       ],
     }
   }
@@ -210,6 +238,7 @@ export function YamlEditor({data,onChange,previewYaml,suggestions,readOnly=false
 
   return (
     <div className="code_mirror">
+      <span>{yamlError}</span>
       {/* <div ref={editorRef}/> */}
       <CodeMirror
         // ref={editorRef}
