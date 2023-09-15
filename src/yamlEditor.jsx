@@ -3,17 +3,16 @@ import { linter, lintGutter } from "@codemirror/lint";
 import CodeMirror,{useCodeMirror} from "@uiw/react-codemirror";
 // import * as events from '@uiw/codemirror-extensions-events';
 import * as yamlMode from "@codemirror/legacy-modes/mode/yaml";
-import { StreamLanguage } from "@codemirror/language";
+import { StreamLanguage} from "@codemirror/language";
 import parser from "js-yaml";
 import { githubLight,githubDark } from "@uiw/codemirror-theme-github";
 import "./codeMirror.css";
-import {EditorState,EditorSelection} from "@codemirror/state";
+import {EditorState} from "@codemirror/state"
 // import { EditorView } from "@codemirror/view";
-import {keymap,EditorView } from "@codemirror/view";
+import {keymap } from "@codemirror/view";
 import {defaultKeymap} from "@codemirror/commands"
 import foldOnIndent from "./foldIndent";
-import {syntaxTree} from "@codemirror/language";
-import {autocompletion,completeFromList,} from "@codemirror/autocomplete";
+import {autocompletion,completeFromList} from "@codemirror/autocomplete";
 import isBracketsBalanced from "./checkBracketsBalanced";
 
 const yaml = StreamLanguage.define(yamlMode.yaml);
@@ -69,12 +68,16 @@ export function YamlEditor({data,onChange,previewYaml,suggestions,readOnly=false
   function myCompletions(context) {
     let word = context.matchBefore(/\w*/);
     let bracket = context.matchBefore(/{.*/);
+    let newLine = context.matchBefore(/\s*-\s\w*/);
 
+    console.log('newline',newLine);
     console.log('word',word);
     console.log('bracket',bracket);
 
     if (word.from == word.to && !context.explicit){ return null}
     if (bracket !=null && bracket.from == bracket.to && !context.explicit){ return null}
+    let newGaps = " ".repeat(4);
+    if(newLine!=null){ newGaps = newGaps + newLine.text.split('-')[0]; }
 
     if(
         // context.matchBefore(/:.*/) || 
@@ -93,16 +96,29 @@ export function YamlEditor({data,onChange,previewYaml,suggestions,readOnly=false
         options: suggestions
       }
     }
-    if(context.matchBefore(/- .*/) !=null && !(context.matchBefore(/:.*/) !=null) ){
+    if(context.matchBefore(/-\s.*/) !=null && !(context.matchBefore(/:.*/) !=null) ){
       return {
         from: word.from,
         options: [
-          {label: "match", type: "text"},
           {label: "magic", type: "text", apply: "jadu", detail: "local"},
-          {label: "template", type: "keyword", apply:'template: '},      
-          {label: "paragraph", type: "keyword", apply:'paragraph: '},       
-          {label: "switch_case", type: "keyword", apply:'switch_case: \n    case : \n    options:'},
-          {label: "text", type: "keyword", apply:'text: \n    '},  
+          {label: "template", type: "keyword", apply:'template: '},    
+          {label: "text", type: "keyword", apply:'text: '},    
+          {label: "switch_case", type: "keyword", apply:`switch_case: \n${newGaps}case : \n${newGaps}options: `},
+          {label: "iterator", type: "keyword", apply:`iterator: \n${newGaps}elements : \n${newGaps}loop: `},
+          {label: "paragraph", type: "keyword", apply:`paragraph: |\n${newGaps}`},
+          
+        ],
+      }
+    }
+    if(!(context.matchBefore(/:.*/) !=null) ){
+      return {
+        from: word.from,
+        options: [
+          {label: "worse", type: "keyword", apply:`worse: ` , detail: "local"},
+          {label: "bad", type: "keyword", apply:`bad: ` , detail: "local"},
+          {label: "average", type: "keyword", apply:`average: ` , detail: "local"},
+          {label: "good", type: "keyword", apply:`good: ` , detail: "local"},
+          {label: "excellent", type: "keyword", apply:`excellent: ` , detail: "local"},
         ],
       }
     }
@@ -110,6 +126,7 @@ export function YamlEditor({data,onChange,previewYaml,suggestions,readOnly=false
       from: word.from,
       options: [
         {label: "no match found", type: "text"},
+      
       ],
     }
   }
@@ -130,7 +147,9 @@ export function YamlEditor({data,onChange,previewYaml,suggestions,readOnly=false
     EditorState.readOnly.of(readOnly),
     // EditorState.allowMultipleSelections.of(true),
     // keymap.of(defaultKeymap),
-    keymap.of([{ key: 'CTRL-l', run: moveToLine },]),
+    keymap.of([
+{ key: 'Ctrl-m', run: moveToLine },
+    ]),
     autocompletion({ override: [
       myCompletions,
       // completeFromList(
@@ -161,23 +180,27 @@ export function YamlEditor({data,onChange,previewYaml,suggestions,readOnly=false
   };
 
   // const { setContainer } = useCodeMirror({
-  //   container: editor.current,
+  //   container: editorRef.current,
   //   extensions: extensions,
   //   value: data,
+  //   theme: readOnly? githubDark : githubLight,
+  //   height : readOnly ? '200px' : null
   // });
 
   // useEffect(() => {
-  //   if(editor.current){
-  //     setContainer(editor.current);
+  //   if(editorRef.current){
+  //     setContainer(editorRef.current);
+  //     console.log(editorRef.current);
+  //     // hanleKeyPress
   //   }
 
-  // },[editor.current])
+  // },[editorRef.current])
 
   return (
     <div className="code_mirror">
-      {/* <div ref={editor}/> */}
+      {/* <div ref={editorRef}/> */}
       <CodeMirror
-        ref={editorRef}
+        // ref={editorRef}
         height= {readOnly ? '200px' : null}
         onChange={_onChange}
         value={data}
