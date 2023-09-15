@@ -77,7 +77,11 @@ export function YamlEditor({data,onChange,previewYaml,suggestions,readOnly=false
     if (word.from == word.to && !context.explicit){ return null}
     if (bracket !=null && bracket.from == bracket.to && !context.explicit){ return null}
     let newGaps = " ".repeat(4);
-    if(newLine!=null){ newGaps = newGaps + newLine.text.split('-')[0]; }
+    let siblingGaps = " ".repeat(2);
+    if(newLine!=null){ 
+      newGaps = newGaps + newLine.text.split('-')[0]; 
+      siblingGaps = siblingGaps + newLine.text.split('-')[0]; 
+    }
 
     if(
         // context.matchBefore(/:.*/) || 
@@ -102,10 +106,18 @@ export function YamlEditor({data,onChange,previewYaml,suggestions,readOnly=false
         options: [
           {label: "magic", type: "text", apply: "jadu", detail: "local"},
           {label: "template", type: "keyword", apply:'template: '},    
-          {label: "text", type: "keyword", apply:'text: '},    
-          {label: "switch_case", type: "keyword", apply:`switch_case: \n${newGaps}case : \n${newGaps}options: `},
-          {label: "iterator", type: "keyword", apply:`iterator: \n${newGaps}elements : \n${newGaps}loop: `},
+          {label: "text", type: "keyword", apply:'text: '},
+          {label: "references", type: "keyword", apply:`references: \n${newGaps}`},
           {label: "paragraph", type: "keyword", apply:`paragraph: |\n${newGaps}`},
+          {label: "switch_case", type: "keyword", apply:`switch_case: \n${newGaps}case : \n${newGaps}options: `},
+          {label: "new_ref", type: "keyword", apply:`name: \n${siblingGaps}content : \n${newGaps}`},
+          {label: "iterator", type: "keyword", apply:`iterator: \n${newGaps}elements : \n${newGaps}loop: `},
+          {label: "ext_link", type: "keyword", apply:`ext_link: \n${newGaps}code : \n${newGaps}source: `},
+          {
+            label: "action_link", 
+            type: "keyword", 
+            apply:`action_link: \n${newGaps}name : \n${newGaps}auth: \n${newGaps}params:\n${newGaps}  user_id: \n${newGaps}  birth_profile_id: `
+          },
           
         ],
       }
