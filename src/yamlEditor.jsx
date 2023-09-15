@@ -105,18 +105,18 @@ export function YamlEditor({data,onChange,previewYaml,suggestions,readOnly=false
         from: word.from,
         options: [
           {label: "magic", type: "text", apply: "jadu", detail: "local"},
-          {label: "template", type: "keyword", apply:'template: '},    
+          {label: "template", type: "keyword", apply:'template: &'},    
           {label: "text", type: "keyword", apply:'text: '},
           {label: "references", type: "keyword", apply:`references: \n${newGaps}`},
           {label: "paragraph", type: "keyword", apply:`paragraph: |\n${newGaps}`},
-          {label: "switch_case", type: "keyword", apply:`switch_case: \n${newGaps}case : \n${newGaps}options: `},
-          {label: "new_ref", type: "keyword", apply:`name: \n${siblingGaps}content : \n${newGaps}`},
+          {label: "switch_case", type: "keyword", apply:`switch_case: \n${newGaps}case : case\n${newGaps}options: \n${newGaps}    `},
+          {label: "new_ref", type: "keyword", apply:`name: name\n${siblingGaps}content : \n${newGaps}`},
           {label: "iterator", type: "keyword", apply:`iterator: \n${newGaps}elements : \n${newGaps}loop: `},
-          {label: "ext_link", type: "keyword", apply:`ext_link: \n${newGaps}code : \n${newGaps}source: `},
+          {label: "ext_link", type: "keyword", apply:`ext_link: \n${newGaps}code : code\n${newGaps}source: source`},
           {
             label: "action_link", 
             type: "keyword", 
-            apply:`action_link: \n${newGaps}name : \n${newGaps}auth: \n${newGaps}params:\n${newGaps}  user_id: \n${newGaps}  birth_profile_id: `
+            apply:`action_link: \n${newGaps}name : name\n${newGaps}auth: auth\n${newGaps}params:\n${newGaps}  param1: param\n${newGaps}  param2: param`
           },
           
         ],
