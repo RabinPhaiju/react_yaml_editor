@@ -5,7 +5,7 @@ export default function getAllKeys(obj,type='text',detail = 'local') {
     function recurse(obj, current) {
       for (let key in obj) {
         let newKey = current ? `${current}.${key}` : key;
-        if (typeof obj[key] === 'object') {
+        if (typeof obj[key] === 'object' && ! Array.isArray(obj[key])) {
           recurse(obj[key], newKey);
         } else {
           newKey = newKey.replace(pattern, '');

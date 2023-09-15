@@ -57,29 +57,33 @@ export function YamlEditor({data,onChange,previewYaml,suggestions,readOnly=false
       }
   }
 
-  const yamlAutocomplete = autocompletion({
-    override: [completeFromList(suggestions)]
-  });
-
   function checkBracketPair(context){
     let isPair = true;
     let match_before = context.matchBefore(/.*}.*/);
     if(match_before != null && match_before.text.includes('}')){
-      isPair = isBracketsBalanced(match_before.text.slice(0, -2));
-      console.log(isPair);
+      isPair = isBracketsBalanced(match_before.text.replace(/{{(?!.*{{)/, ''));
     }
     return isPair;
   }
 
   function myCompletions(context) {
     let word = context.matchBefore(/\w*/);
+    let bracket = context.matchBefore(/{.*/);
+
+    console.log('word',word);
+    console.log('bracket',bracket);
+
     if (word.from == word.to && !context.explicit){ return null}
+    if (bracket !=null && bracket.from == bracket.to && !context.explicit){ return null}
+
     if(
         // context.matchBefore(/:.*/) || 
         // context.matchBefore(/.*:/) ||
         ( 
           ( context.matchBefore(/{{\s+ \w+/) !=null || 
-            context.matchBefore(/{{\w+/) !=null 
+            context.matchBefore(/{{\w+/) !=null ||
+            context.matchBefore(/{{\s+/) !=null ||
+            context.matchBefore(/{{/) !=null
           ) && 
             checkBracketPair(context) 
             )
@@ -96,9 +100,9 @@ export function YamlEditor({data,onChange,previewYaml,suggestions,readOnly=false
           {label: "match", type: "text"},
           {label: "magic", type: "text", apply: "jadu", detail: "local"},
           {label: "template", type: "keyword", apply:'template: '},      
-          {label: "name", type: "keyword", apply:'name: '},       
-          {label: "switch_case", type: "keyword", apply:'switch_case: '},
-          {label: "text", type: "keyword", apply:'text: '},    
+          {label: "paragraph", type: "keyword", apply:'paragraph: '},       
+          {label: "switch_case", type: "keyword", apply:'switch_case: \n    case : \n    options:'},
+          {label: "text", type: "keyword", apply:'text: \n    '},  
         ],
       }
     }
@@ -125,10 +129,18 @@ export function YamlEditor({data,onChange,previewYaml,suggestions,readOnly=false
     yamlLinter,
     EditorState.readOnly.of(readOnly),
     // EditorState.allowMultipleSelections.of(true),
-    // yamlAutocomplete,,
     // keymap.of(defaultKeymap),
     keymap.of([{ key: 'CTRL-l', run: moveToLine },]),
-    autocompletion({ override: [myCompletions],}),
+    autocompletion({ override: [
+      myCompletions,
+      // completeFromList(
+      //   [
+      //     '.apple',
+      //     '.ball',
+      //     '{suggestions'
+      //   ]
+      //   )
+    ],}),
   ]
 
   if(!readOnly){
@@ -144,6 +156,7 @@ export function YamlEditor({data,onChange,previewYaml,suggestions,readOnly=false
 
   const handleKeyUp = (e) => {
     if (e.key === '[' ) {
+      
     }
   };
 
