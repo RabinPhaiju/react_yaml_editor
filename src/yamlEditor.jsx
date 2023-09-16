@@ -81,9 +81,9 @@ export function YamlEditor({
     let anchor = context.matchBefore(/\*.*/);
     let newLine = context.matchBefore(/\s*-\s\w*/);
 
-    let test = context.matchBefore(/{{#\w+/);
+    // let test = context.matchBefore(/{{#\w+/);
 
-    console.log('----------',test);
+    // console.log('----------',test);
 
     console.log('newline',newLine);
     console.log('word',word);
@@ -188,7 +188,7 @@ export function YamlEditor({
     // EditorState.allowMultipleSelections.of(true),
     // keymap.of(defaultKeymap),
     keymap.of([
-{ key: 'Ctrl-m', run: moveToLine },
+      { key: 'Ctrl-m', run: moveToLine },
     ]),
     autocompletion({ override: [
       myCompletions,
@@ -215,7 +215,7 @@ export function YamlEditor({
 
   const handleKeyUp = (e) => {
     if (e.key === '[' ) {
-      
+
     }
   };
 
