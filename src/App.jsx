@@ -54,7 +54,8 @@ export default function App() {
           male:
               - text: 'her'
           female:
-              - text: 
+              - paragraph: |
+                  At PocketPandit, we employ our unique and innovative Vedic astrology calculations. Based on our analyses, we have determined that the prospects of {{them}} making a significant investment are considered below average. Unfortunately, this calculation indicates that it may be challenging for {{them}} to make a substantial investment. From an astrological perspective, the window of opportunity to make a significant investment may be limited to a narrower range of potential dates.jdkfdj fkdjf.
 `;
 
 const contextSuggestion = {

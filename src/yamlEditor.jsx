@@ -8,9 +8,8 @@ import parser from "js-yaml";
 import { githubLight,githubDark } from "@uiw/codemirror-theme-github";
 import "./codeMirror.css";
 import {EditorState} from "@codemirror/state"
-// import { EditorView } from "@codemirror/view";
-import {keymap } from "@codemirror/view";
-import {defaultKeymap} from "@codemirror/commands"
+import {keymap,EditorView } from "@codemirror/view";
+// import {defaultKeymap,indentWithTab} from "@codemirror/commands"
 import foldOnIndent from "./foldIndent";
 import {autocompletion,completeFromList} from "@codemirror/autocomplete";
 import isBracketsBalanced from "./checkBracketsBalanced";
@@ -159,6 +158,8 @@ export function YamlEditor({
             {label: "average", type: "keyword", apply:`average: ` , detail: "local"},
             {label: "good", type: "keyword", apply:`good: ` , detail: "local"},
             {label: "excellent", type: "keyword", apply:`excellent: ` , detail: "local"},
+            {label: "bold", type: "keyword", apply:`****` , detail: "local"},
+            {label: "link", type: "keyword", apply:`[](url)` , detail: "local"},
           ],}
       }
     
@@ -185,6 +186,11 @@ export function YamlEditor({
     lintGutter(),
     yamlLinter,
     EditorState.readOnly.of(readOnly),
+    EditorView.lineWrapping,
+    // EditorState.tabSize.of(16),
+    // EditorState.changeFilter.of(() => true),
+    // tabSize.of(EditorState.tabSize.of(10)),
+    // EditorState.tabSize.of(4),
     // EditorState.allowMultipleSelections.of(true),
     // keymap.of(defaultKeymap),
     keymap.of([
