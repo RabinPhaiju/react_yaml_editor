@@ -166,8 +166,8 @@ export function YamlEditor({
     return {
       from: word.from,
       options: [
-        {label: "no match found", type: "text"},
-        {label: "check suggestion rules", type: "text"},
+        {label: "no match found", type: "text",apply:' ', detail: "hint"},
+        {label: "check suggestion rules", type: "text",apply:' ', detail: "hint"},
       ],
     }
   }
