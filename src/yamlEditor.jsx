@@ -143,7 +143,6 @@ export function YamlEditor({
     if(
     context.matchBefore(/\*./) !=null
     ){ 
-      console.log('*here');  
       return { from: word.from,options: anchorSuggestions }
     }
     
