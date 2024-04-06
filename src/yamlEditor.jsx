@@ -1,17 +1,15 @@
-import React,{useRef,useEffect,createRef, useState} from "react";
+import React,{useCallback, useState} from "react";
 import { linter, lintGutter } from "@codemirror/lint";
-import CodeMirror,{useCodeMirror} from "@uiw/react-codemirror";
-// import * as events from '@uiw/codemirror-extensions-events';
+import CodeMirror from "@uiw/react-codemirror";
 import * as yamlMode from "@codemirror/legacy-modes/mode/yaml";
 import { StreamLanguage} from "@codemirror/language";
 import parser from "js-yaml";
 import { githubLight,githubDark } from "@uiw/codemirror-theme-github";
-import "./codeMirror.css";
+// import "./style.css";
 import {EditorState} from "@codemirror/state"
 import {keymap,EditorView } from "@codemirror/view";
-// import {defaultKeymap,indentWithTab} from "@codemirror/commands"
 import foldOnIndent from "./foldIndent";
-import {autocompletion,completeFromList} from "@codemirror/autocomplete";
+import {autocompletion} from "@codemirror/autocomplete";
 import isBracketsBalanced from "./checkBracketsBalanced";
 
 const yaml = StreamLanguage.define(yamlMode.yaml);
@@ -41,20 +39,21 @@ const yamlLinter = linter((view) => {
 export function YamlEditor({
   data,
   onChange,
-  previewYaml,
-  suggestions,
+  saveYaml,
+  contextSuggestions,
+  partialSuggestions,
+  linkSuggestions,
   anchorSuggestions=[],
   readOnly=false
 }) {
   const [yamlError,setYamlError] = useState(null);
-  const editorRef = createRef();
-  const valueRef = useRef(data);
+  // const editorRef = createRef();
+  // const valueRef = useRef(data);
 
-  function _onChange(value) {
+  const _onChange = useCallback((value, viewUpdate) => {
       // let value_object = parser.load(value);
       // console.log(value_object);
       // value = parser.dump(value_object[0]);
-      // console.log(value);
       try{
         parser.loadAll(value);
         onChange(value);
@@ -63,7 +62,7 @@ export function YamlEditor({
         console.log(e);
         setYamlError(e?.mark?.snippet)
       }
-  }
+  }, []);
 
   function checkBracketPair(context){
     let isPair = true;
@@ -77,6 +76,7 @@ export function YamlEditor({
   function myCompletions(context) {
     let word = context.matchBefore(/\w*/);
     let bracket = context.matchBefore(/{.*/);
+    let bracketPartials = context.matchBefore(/{>.*/);
     let anchor = context.matchBefore(/\*.*/);
     let newLine = context.matchBefore(/\s*-\s\w*/);
 
@@ -84,13 +84,14 @@ export function YamlEditor({
 
     // console.log('----------',test);
 
-    console.log('newline',newLine);
-    console.log('word',word);
-    console.log('bracket',bracket);
-    console.log('anchor',anchor);
+    // console.log('newline',newLine);
+    // console.log('word',word);
+    // console.log('bracket',bracket);
+    // console.log('anchor',anchor);
 
     if (word.from == word.to && !context.explicit){ return null}
     if (bracket !=null && bracket.from == bracket.to && !context.explicit){ return null}
+    if (bracketPartials !=null && bracketPartials.from == bracketPartials.to && !context.explicit){ return null}
     if (anchor !=null && anchor.from == anchor.to && !context.explicit){ return null}
     let newGaps = " ".repeat(4);
     let siblingGaps = " ".repeat(2);
@@ -99,87 +100,109 @@ export function YamlEditor({
       siblingGaps = siblingGaps + newLine.text.split('-')[0]; 
     }
 
-    if((( context.matchBefore(/{{\s+ \w+/) !=null || 
+    if( context.matchBefore(/{{\s+\w+/) !=null || 
         context.matchBefore(/{{\w+/) !=null ||
+        context.matchBefore(/{{ /) !=null ||
         context.matchBefore(/{{\s+/) !=null ||
         context.matchBefore(/{{/) !=null
-      ) &&  checkBracketPair(context) ) ){
+       ){
         return {
         from: word.from,
-        options: suggestions
+        options: contextSuggestions
       }
     }
-    if(context.matchBefore(/-\s.*/) !=null && !(context.matchBefore(/:.*/) !=null) ){
+
+    if((context.matchBefore(/-\s\w+/) !=null || context.matchBefore(/-\s/) !=null) && !(context.matchBefore(/:.*/) !=null) ){
       return {
         from: word.from,
         options: [
-          {label: "magic", type: "text", apply: "jadu", detail: "local"},
-          {label: "template", type: "keyword", apply:'template: &'},    
           {label: "text", type: "keyword", apply:'text: '},
-          {label: "references", type: "keyword", apply:`references: \n${newGaps}`},
           {label: "paragraph", type: "keyword", apply:`paragraph: |\n${newGaps}`},
+          {label: "choice", type: "keyword", apply:`choice: `},
           {label: "switch_case", type: "keyword", apply:`switch_case: \n${newGaps}case : case\n${newGaps}options: \n${newGaps}    `},
-          {label: "new_ref", type: "keyword", apply:`name: name\n${siblingGaps}content : \n${newGaps}`},
           {label: "iterator", type: "keyword", apply:`iterator: \n${newGaps}elements : \n${newGaps}loop: `},
+          {label: "references", type: "keyword", apply:`references: \n${newGaps}`},
+          {label: "template", type: "keyword", apply:'template: &'},    
+          {label: "new_ref", type: "keyword", apply:`name: name\n${siblingGaps}content : \n${newGaps}`},
           {label: "ext_link", type: "keyword", apply:`ext_link: \n${newGaps}code : code\n${newGaps}source: source`},
           {
             label: "action_link", 
             type: "keyword", 
             apply:`action_link: \n${newGaps}name : name\n${newGaps}auth: auth\n${newGaps}params:\n${newGaps}  param1: param\n${newGaps}  param2: param`
+          }, 
+          {
+            label: "app_link", 
+            type: "keyword", 
+            apply:`app_link: \n${newGaps}path : path\n${newGaps}params: \n${newGaps}  page: page\n${newGaps}  tab: tab`
           },
           
         ],
       }
     }
 
-    if(context.matchBefore(/\*.*/) !=null){ return { from: word.from,options: anchorSuggestions }}
+    if(
+    context.matchBefore(/\*./) !=null
+    ){ 
+      console.log('*here');  
+      return { from: word.from,options: anchorSuggestions }
+    }
     
-    if(context.matchBefore(/{{>\w+/) !=null || context.matchBefore(/{{>/) !=null){ 
-      return {from: word.from,options: [
-          {label: "greater1", type: "text"},
-          {label: "greater2", type: "text"},
-        ],
-      }}
+    if(
+        context.matchBefore(/{{>\s+\w+/) !=null || 
+        context.matchBefore(/{{>\w+/) !=null ||
+        context.matchBefore(/{{> /) !=null ||
+        context.matchBefore(/{{>\s+/) !=null ||
+        context.matchBefore(/{{>/) !=null
+      ){ 
+      return {
+        from: word.from,
+        options: partialSuggestions,
+      }
+    }
 
-    if(context.matchBefore(/{{#\w+/) !=null || context.matchBefore(/{{#/) !=null){ 
-      return {from: word.from,options: [
-          {label: "sharp1", type: "text"},
-          {label: "share2", type: "text"},
-        ],
-      }}
-
-      if(
-        !(context.matchBefore(/:.*/) !=null) &&
-        !(context.matchBefore(/{.*/) !=null) 
-        ){
-        return { from: word.from, options: [
-            {label: "worse", type: "keyword", apply:`worse: ` , detail: "local"},
-            {label: "bad", type: "keyword", apply:`bad: ` , detail: "local"},
-            {label: "average", type: "keyword", apply:`average: ` , detail: "local"},
-            {label: "good", type: "keyword", apply:`good: ` , detail: "local"},
-            {label: "excellent", type: "keyword", apply:`excellent: ` , detail: "local"},
-            {label: "bold", type: "keyword", apply:`****` , detail: "local"},
-            {label: "link", type: "keyword", apply:`[](url)` , detail: "local"},
-          ],}
+    else if(
+        context.matchBefore(/{{#ext_link}}\s+\w+/) !=null || 
+        context.matchBefore(/{{#ext_link}}\w+/) !=null ||
+        context.matchBefore(/{{#ext_link}} /) !=null ||
+        context.matchBefore(/{{#ext_link}}\s+/) !=null ||
+        context.matchBefore(/{{#ext_link}}/) !=null
+    ){ 
+      return {
+        from: word.from,
+        options: linkSuggestions
+        }
       }
     
     return {
       from: word.from,
       options: [
-        {label: "no match found", type: "text",apply:' ', detail: "hint"},
-        {label: "check suggestion rules", type: "text",apply:' ', detail: "hint"},
+        {label: "choice", type: "text",apply:'{{#choice}}  ||  {{/choice}}', detail: "expression"},
+        {label: "conjunction", type: "text",apply:'{{#conjunction}}  :  |  {{/conjunction}}', detail: "expression"},
+        {label: "ordinal", type: "text",apply:'{{#ordinal}}  {{/ordinal}}', detail: "expression"},
+        {label: "conditional", type: "text",apply:'{{#conditional}}  :  |  {{/conditional}}', detail: "expression"},
+        {label: "pluralize", type: "text",apply:'{{#pluralize }}  :  |  {{/pluralize }}', detail: "expression"},
+        {label: "in_words", type: "text",apply:'{{#in_words}}  {{/in_words}}', detail: "expression"},
+        {label: "count", type: "text",apply:'{{#count}}  {{/count}}', detail: "expression"},
+        {label: "ext_link", type: "text",apply:'[Link]({{#ext_link}}{{/ext_link}})', detail: "expression"},
       ],
     }
   }
 
-  function moveToLine(view) {
-    let line = prompt("Which line?")
-    if (!/^\d+$/.test(line) || +line <= 0 || +line > view.state.doc.lines)
-      return false
-    let pos = view.state.doc.line(+line).from
-    view.dispatch({selection: {anchor: pos}, userEvent: "select"})
-    return true
-  }
+  // useEffect(() => {
+  //   let _view = editorRef.current?.view;
+  //   let length = editorRef?.current?.state?.doc?.length;
+  //   // _view?.dispatch({selection: {anchor: length, head: length}, scrollIntoView: true })
+  //   // _view?.dispatch({ userEvent: "unselect" });
+  // },[currentContext])
+
+  // function moveToLine(view) {
+  //   let line = prompt("Which line?")
+  //   if (!/^\d+$/.test(line) || +line <= 0 || +line > view.state.doc.lines)
+  //     return false
+  //   let pos = view.state.doc.line(+line).from
+  //   view.dispatch({selection: {anchor: pos}, userEvent: "select"})
+  //   return true
+  // }
 
   const extensions = [
     yaml,
@@ -187,15 +210,11 @@ export function YamlEditor({
     yamlLinter,
     EditorState.readOnly.of(readOnly),
     EditorView.lineWrapping,
-    // EditorState.tabSize.of(16),
-    // EditorState.changeFilter.of(() => true),
-    // tabSize.of(EditorState.tabSize.of(10)),
-    // EditorState.tabSize.of(4),
     // EditorState.allowMultipleSelections.of(true),
     // keymap.of(defaultKeymap),
-    keymap.of([
-      { key: 'Ctrl-m', run: moveToLine },
-    ]),
+    // keymap.of([
+    //   { key: 'Ctrl-m', run: moveToLine },
+    // ]),
     autocompletion({ override: [
       myCompletions,
       // completeFromList(
@@ -215,7 +234,7 @@ export function YamlEditor({
   const hanleKeyPress = (event) => {
     if ((event.ctrlKey) && (event.key === 's' || event.key === 'S')) {
       event.preventDefault();
-      previewYaml();  
+      saveYaml(event);  
     }
   };
 
@@ -254,13 +273,6 @@ export function YamlEditor({
         theme={ readOnly? githubDark : githubLight}
         extensions={extensions}
         // selection={EditorSelection.cursor(50)}
-        
-        basicSetup= {{
-          lineNumbers: true,
-          lineWrapping: true,
-          foldGutter: true,
-          foldKeymap: true,
-        }}
         onKeyDown={hanleKeyPress}
         onKeyUp={handleKeyUp}
       />
