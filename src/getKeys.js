@@ -9,7 +9,7 @@ export default function getAllKeys(obj,type='text',detail = 'local') {
           recurse(obj[key], newKey);
         } else {
           newKey = newKey.replace(pattern, '');
-          keys.push( {label: newKey, type: type, apply: newKey, detail: detail});
+          keys.push( {label: newKey, type: type, apply: detail == 'link' ? `{{${newKey}}}` : newKey, detail: detail});
         }
       }
     }

@@ -59,7 +59,7 @@ export function YamlEditor({
         onChange(value);
         setYamlError(null)
       }catch(e){
-        console.log(e);
+        // console.log(e);
         setYamlError(e?.mark?.snippet)
       }
   }, []);
@@ -141,7 +141,7 @@ export function YamlEditor({
     }
 
     if(
-    context.matchBefore(/\*./) !=null
+    context.matchBefore(/\*\w+/) !=null
     ){ 
       return { from: word.from,options: anchorSuggestions }
     }
@@ -159,7 +159,7 @@ export function YamlEditor({
       }
     }
 
-    else if(
+    if(
         context.matchBefore(/{{#ext_link}}\s+\w+/) !=null || 
         context.matchBefore(/{{#ext_link}}\w+/) !=null ||
         context.matchBefore(/{{#ext_link}} /) !=null ||

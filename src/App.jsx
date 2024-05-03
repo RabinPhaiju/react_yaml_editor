@@ -7,64 +7,20 @@ import getKeys from "./getKeys";
 
 export default function App() {
   const templateData = `
-- references:
-    - name: prashna_kundali
-      content:
-        - ext_link:
-            code: prashna_kundali
-            source: ext_link
-            
-    - name: primary_house
-      content:
-        - ext_link:
-            code: '{{primary_house.name}}'
-            source: house
-            
-    - name: transit
-      content:
-        - action_link: 
-            name: 'free-astrology:transit'
-            auth: user
-            params:
-                user_id: '{{user_id}}'
-                birth_profile_id: '{{birth_profile_id}}'
-
-- template: &boy-girl
-  - switch_case:
-      case: '{{ gender }}'
-      options:
-          male:
-              - text: 'girl'
-          female:
-              - text: 'boy'
-            
-- template: &he-she
-  - switch_case:
-      case: '{{ gender }}'
-      options:
-          male: 
-              - text: 'she'
-          female:
-              - text: 'he'
-            
-- template: &him-her
-  - switch_case:
-      case: '{{ gender }}'
-      options:
-          male:
-              - text: 'her'
-          female:
-              - paragraph: |
-                  This is a paragraph.
+- template: &likely
+  - paragraph: |
+    
 `;
 
-const genericSuggestion = {
+const partialContextSuggestion = {
   "generic/suggestions": "",
-  "ref/prashna_kundali": "https://test.com/blog/posts/article/question-birth-chart-prashna-kundali-in-vedic-astrology/",
-  "ref/primary_house": "https://test.com/blog/posts/article/11th-house-in-astrology/",
-  "ref/transit": "https://staging.test.com/action-link?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY3Rpb24iOiJmcmVlLWFzdHJvbG9neTp0cmFuc2l0IiwiYXV0aCI6InVzZXIiLCJwYXlsb2FkIjp7InVzZXJfaWQiOjEsImJpcnRoX3Byb2ZpbGVfaWQiOjgxMH0sImV4cCI6MTY5NTE3ODQ3Nn0.CbahKOGQRA8NvkWzxYjmPr71TF4ZTI4gUKctaWqrtDU",
-  "simple_algorithm/bullet_points": "\n\nHere are some details of your **Birth chart** \n\n1. You are [Virgo ascendant](https://test.com/blog/posts/article/virgo-ascendant-kanya-lagna/), your [Sun sign](https://test.com/blog/posts/article/sun-sign-in-vedic-astrology/) is [Sagittarius](https://test.com/blog/posts/article/sagittarius-in-vedic-astrology/) and [Moon sign](https://test.com/blog/posts/article/moon-sign-in-vedic-astrology/) is [Aries](https://test.com/blog/posts/article/aries-in-vedic-astrology/). \n\n2. You have no planets sitting in the [11th house](https://test.com/blog/posts/article/11th-house-in-astrology/) and is being aspected by [Venus](https://test.com/blog/posts/article/venus-in-vedic-astrology-shukra-in-vedic-astrology/), [Saturn](https://test.com/blog/posts/article/saturn-in-vedic-astrology-shani-in-vedic-astrology/) and [Jupiter](https://test.com/blog/posts/article/jupiter-in-vedic-astrology-brihaspati-in-vedic-astrology/). \n\n3. The sign of your [11th House](https://test.com/blog/posts/article/11th-house-in-astrology/) is [Cancer](https://test.com/blog/posts/article/cancer-in-vedic-astrology/) and its lord is [Moon](https://test.com/blog/posts/article/the-moon-in-vedic-astrology-chandra-in-vedic-astrology/). \n\n4. [Moon](https://test.com/blog/posts/article/the-moon-in-vedic-astrology-chandra-in-vedic-astrology/), the lord of your [11th House](https://test.com/blog/posts/article/11th-house-in-astrology/), is placed in the [8th House](https://test.com/blog/posts/article/8th-house-in-astrology/) which is neutral sign to [Aries](https://test.com/blog/posts/article/aries-in-vedic-astrology/). \n\n5. [Venus](https://test.com/blog/posts/article/venus-in-vedic-astrology-shukra-in-vedic-astrology/) - representing girlfriend - reside in the [5th house](https://test.com/blog/posts/article/5th-house-in-astrology/). \n\n6. The current time period you are in is the [Ketu-Rahu](https://staging.test.com/action-link?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY3Rpb24iOiJmcmVlLWFzdHJvbG9neTp2aW1zaG90dGFyaS1kYXNoYSIsImF1dGgiOiJ1c2VyIiwicGF5bG9hZCI6eyJkYXNoYV9zZXF1ZW5jZSI6IlswLCA1XSIsInVzZXJfaWQiOjEsImJpcnRoX3Byb2ZpbGVfaWQiOjgxMH0sImV4cCI6MTY5NTE3ODQ3Nn0.ywhmxQvA_5PlFp2yTWzng4tXOslnVAAzMW4FIxAq8vM) period. \n\n7. The [current transit](https://staging.test.com/action-link?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY3Rpb24iOiJmcmVlLWFzdHJvbG9neTp0cmFuc2l0IiwiYXV0aCI6InVzZXIiLCJwYXlsb2FkIjp7InVzZXJfaWQiOjEsImJpcnRoX3Byb2ZpbGVfaWQiOjgxMH0sImV4cCI6MTY5NTE3ODQ3Nn0.CbahKOGQRA8NvkWzxYjmPr71TF4ZTI4gUKctaWqrtDU) in your [11th House](https://test.com/blog/posts/article/11th-house-in-astrology/) is of [Venus](https://test.com/blog/posts/article/venus-in-vedic-astrology-shukra-in-vedic-astrology/) at the moment. \n\nIn addition to your birth chart, we have also considered your [D9](https://test.com/blog/posts/article/d-9-in-vedic-astrology/) chart, which provides further insights. For more detailed information about this divisional chart, please refer to the [provided link](https://staging.test.com/action-link?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY3Rpb24iOiJpbnN0YW50LXByZWRpY3Rpb246Y2hhcnRfZGVzY3JpcHRpb25zX2xpbmsiLCJhdXRoIjoicHVibGljIiwicGF5bG9hZCI6eyJwb3N0X2lkIjoiIiwidXNlcl9pZCI6MX0sImV4cCI6MTY5NTE3ODQ3Nn0.1mvkArMxmoIXzf7NtaHcmEzV5sl6aBYn3Fr44iG0AP4).",
-  "simple_algorithm/kundali_house_description": "\n\n1. [**Birth chart(D1)**](https://test.com/blog/posts/article/d-1-chart-in-vedic-astrology/) and its **[1st House](https://test.com/blog/posts/article/1st-house-in-astrology/)**, **[5th House](https://test.com/blog/posts/article/5th-house-in-astrology/)** and **[11th House](https://test.com/blog/posts/article/11th-house-in-astrology/)** \n\n2. [**Relationship chart(D9)**](https://test.com/blog/posts/article/d-9-in-vedic-astrology/) and its **[1st House](https://test.com/blog/posts/article/1st-house-in-astrology/)**, **[5th House](https://test.com/blog/posts/article/5th-house-in-astrology/)** and **[11th House](https://test.com/blog/posts/article/11th-house-in-astrology/)**"
+  "generic/private_chat_link":'',
+  "header_content":'',
+  "bottom_content":'',
+  "simple_algorithm/astrological_insight_link":'',
+  "simple_algorithm/astrological_insigth": "",
+  "timeline/dates_and": "",
+  "timeline/dates_to": "",
 } 
 
 const defaultSuggestions = [ 
@@ -75,155 +31,199 @@ const defaultSuggestions = [
 
 const linkSuggestion = [
   {label: "test", type: "text",apply:'test.com', detail: "expression"},
-
 ]
 
+const externalLink = {
+  "House 1,house": "",
+  "House 2,house": "",
+  "House 3,house": "",
+  "House 4,house": "",
+  "House 5,house": "",
+  "House 6,house": "",
+  "House 7,house": "",
+  "House 8,house": "",
+  "House 9,house": "",
+  "House 10,house": "",
+  "House 11,house": "",
+  "House 12,house": "",
+  "Ascendant,planet": "",
+  "Sun,planet": "",
+  "Moon,planet": "",
+  "Mercury,planet": "",
+  "Venus,planet": "",
+  "Mars,planet": "",
+  "Jupiter,planet": "",
+  "Saturn,planet": "",
+  "Uranus,planet": "",
+  "Neptune,planet": "",
+  "Pluto,planet": "",
+  "Rahu,planet": "",
+  "Rahu (True),planet": "",
+  "Ketu,planet": "",
+  "Ketu (True),planet": "",
+  "Aries,ascendant": "",
+  "Taurus,ascendant": "",
+  "Gemini,ascendant": "",
+  "Cancer,ascendant": "",
+  "Leo,ascendant": "",
+  "Virgo,ascendant": "",
+  "Libra,ascendant": "",
+  "Scorpio,ascendant": "",
+  "Sagittarius,ascendant": "",
+  "Capricorn,ascendant": "",
+  "Aquarius,ascendant": "",
+  "Pisces,ascendant": "",
+  "D1,chart": "",
+  "D6,chart": "",
+  "D7,chart": "",
+  "D8,chart": "",
+  "D9,chart": "",
+  "D10,chart": "",
+  "D11,chart": "",
+  "D12,chart": "",
+  "D16,chart": "",
+  "D20,chart": "",
+  "D24,chart": "",
+  "D27,chart": "",
+  "D30,chart": "",
+  "D40,chart": "",
+  "D45,chart": "",
+  "D60,chart": "",
+  "D2,chart": "",
+  "D3,chart": "",
+  "D4,chart": "",
+  "D5,chart": "",
+  "faq,ext_link": "",
+  "aspects,ext_link": "",
+  "conjunction,ext_link": "",
+  "transits,ext_link": "",
+  "ashtottari_dasha,ext_link": "",
+  "chara_dasha,ext_link": "",
+  "trivagi_dasha,ext_link": "",
+  "yogini_dasha,ext_link": "",
+  "vimshottari_dasha,ext_link": "",
+  "mutable_signs,ext_link": "",
+  "fixed_signs,ext_link": "",
+  "movable_signs,ext_link": "",
+  "maha_dasha,ext_link": "",
+  "antar_dasha,ext_link": "",
+  "pratyantar_dasha,ext_link": "",
+  "planet_strength,ext_link": "",
+  "horoscope,ext_link": "",
+  "divisional_chart,ext_link": "",
+  "sun_sign,ext_link": "",
+  "moon_sign,ext_link": "",
+  "planet_friendship,ext_link": "",
+  "ask,ext_link": "",
+  "blog,ext_link": "",
+  "prashna_kundali,ext_link": "",
+  "tiktok,ext_link": "",
+  "facebook,ext_link": "",
+  "twitter,ext_link": "",
+  "youtube,ext_link": "",
+  "instagram,ext_link": "",
+  "Aries,zodiac": "",
+  "Taurus,zodiac": "",
+  "Gemini,zodiac": "",
+  "Cancer,zodiac": "",
+  "Leo,zodiac": "",
+  "Virgo,zodiac": "",
+  "Libra,zodiac": "",
+  "Scorpio,zodiac": "",
+  "Sagittarius,zodiac": "",
+  "Capricorn,zodiac": "",
+  "Aquarius,zodiac": "",
+  "Pisces,zodiac": ""
+}
+
 const contextSuggestion = {
-  "ascendant": "Virgo",
-  "birth_profile_id": 810,
+  "activation_strength": {
+      "activated_planets": [],
+      "top_activated_planets": [],
+      "transit_planets": [],
+      "is_positive": true
+  },
+  "age": 1,
+  "ascendant": "",
+  "birth_profile_id": 4,
+  "connection_algorithm": {
+      "related_planets": [],
+      "connected_planets": [],
+      "matched_planets": [],
+      "indicator_planets": [],
+      "has_relations": false
+  },
   "count_suggestions": 0,
-  "first_name": "Raj",
-  "full_name": "Raj Malhotra",
+  "first_name": "",
+  "full_name": "",
   "gender": "male",
   "has_alternative": false,
+  "has_have": "have",
   "has_suggestions": false,
+  "is_are": "are",
   "is_gender_male": true,
+  "is_initial_answer": true,
+  "is_positive": true,
   "is_prashna_kundali": false,
+  "is_private": false,
   "is_self": true,
-  "moon_sign": "Aries",
+  "moon_sign": "",
   "native": "you",
   "native's": "your",
-  "planet_activation": {
-      "top_activated_planets": [
-          "Saturn",
-          "Jupiter",
-          "Venus"
-      ],
-      "top_activated_planet_data": [
-          {
-              "name": "Saturn",
-              "value": 7
-          },
-          {
-              "name": "Jupiter",
-              "value": 6
-          },
-          {
-              "name": "Venus",
-              "value": 4
-          }
-      ],
-      "transit_planets": [
-          "Venus",
-          "Moon"
-      ],
-      "transiting_planet_data": [
-          {
-              "name": "Venus",
-              "value": 4
-          },
-          {
-              "name": "Moon",
-              "value": 2
-          }
-      ]
-  },
-  "post_id": null,
+  "post_id": "",
   "primary_house": {
-      "name": "House 11",
-      "value": 11
+      "name": "5",
+      "value": 5
   },
   "primary_kundali": "D1",
-  "question_id": 231,
+  "question_id": 4,
   "relationship": "Self",
-  "simple_algorithm": {
-      "yogas": [],
-      "kundalies": [
-          "D1",
-          "D9"
-      ],
-      "houses": [
-          "House 11",
-          "House 1",
-          "House 5"
-      ]
-  },
   "standard": {
-      "percent": 53.8,
-      "grading": "average"
+      "percent": 0,
+      "grading": ""
   },
-  "sun_sign": "Sagittarius",
+  "sun_sign": "",
   "their": "your",
   "them": "you",
   "themself": "yourself",
   "they": "you",
   "timeline": {
-      "events": [
-          {
-              "index": 1,
-              "name": "Sun-Rahu-Venus",
-              "different_end_date": true,
-              "start_date": "April 2049",
-              "end_date": "June 2049",
-              "has_transit": false,
-              "planet_in_transit": null
-          },
-          {
-              "index": 2,
-              "name": "Sun-Rahu-Jupiter",
-              "different_end_date": true,
-              "start_date": "October 2048",
-              "end_date": "December 2048",
-              "has_transit": false,
-              "planet_in_transit": null
-          },
-          {
-              "index": 3,
-              "name": "Sun-Mercury-Venus",
-              "different_end_date": true,
-              "start_date": "July 2051",
-              "end_date": "August 2051",
-              "has_transit": false,
-              "planet_in_transit": null
-          }
-      ],
-      "count_events": 3,
-      "has_events": true,
-      "limit_in_years": 10,
-      "limit_date": "Jan 2052"
+      "events": [],
+      "count_events": 0,
+      "has_events": false,
+      "limit_in_years": 0.25,
+      "limit_in_words": "",
+      "limit_date": ""
   },
-  "user_id": 1
+  "user_id": 8
 }
 
 const [contextSuggestions, setContextSuggestions] = useState([]);
 const [partialSuggestions, setPartialSuggestions] = useState(defaultSuggestions);
-const [linkSuggestions, setLinkSuggestions] = useState(linkSuggestion);
+const [linkSuggestions, setLinkSuggestions] = useState([]);
 const [anchorSuggestions,setAnchorSuggestions] = useState();
 const [ data, setData ] = useState(templateData);
 
 useEffect(()=>{
-  updateSuggestions(contextSuggestion);
+  updateSuggestions(contextSuggestion,partialContextSuggestion,externalLink);
 },[])
 
-const  updateSuggestions =((data) => {
-  let context_suggestions = [data].flatMap(obj => getKeys(obj,'text','context'));
+const  updateSuggestions =((context,partial_context,externalLink) => {
+  let context_suggestions = [context].flatMap(obj => getKeys(obj,'text','context'));
+  let _link_suggestion = [externalLink].flatMap(obj => getKeys(obj,'text','link'));
 
   let _context_suggestion = [];
-  let _link_suggestion = [];
   context_suggestions.forEach((suggestion) => {          
-    if(suggestion.detail == 'link'){
-      _link_suggestion.push(suggestion);
-    }
-    else{_context_suggestion.push(suggestion);}
+    _context_suggestion.push(suggestion);
   })
-  let partial_suggestions = [data.partial_context].flatMap(obj => getKeys(obj,'text','generic'));
+  let partial_suggestions = [partial_context].flatMap(obj => getKeys(obj,'text','generic'));
   setContextSuggestions(prev => [...prev,..._context_suggestion]);
   setPartialSuggestions(prev => [...prev,...partial_suggestions]);
   setLinkSuggestions(prev => [...prev,..._link_suggestion]);
 })
 
 useEffect(()=>{
-  const regex = new RegExp(/&\w+?\-\w+/,'g');
+  const regex = new RegExp(/&\w+?\w+/,'g');
   let newData = data?.match(regex);
   if(newData !=null){
     const _anchorSuggestions = [];
