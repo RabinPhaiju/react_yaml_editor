@@ -5,4 +5,10 @@ import react from '@vitejs/plugin-react'
     export default defineConfig({
     hmr: 'localhost',
   plugins: [react()],
+  base: '/react_yaml_editor',
+  resolve: {
+    alias: {
+      '@': '/src'
+    }
+  }
 })
