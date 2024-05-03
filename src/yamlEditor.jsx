@@ -176,7 +176,7 @@ export function YamlEditor({
       from: word.from,
       options: [
         {label: "choice", type: "text",apply:'{{#choice}}  ||  {{/choice}}', detail: "expression"},
-        {label: "conjunction", type: "text",apply:'{{#conjunction}}  :  |  {{/conjunction}}', detail: "expression"},
+        {label: "conjunction", type: "text",apply:'{{#conjunction}}  {{/conjunction}}', detail: "expression"},
         {label: "ordinal", type: "text",apply:'{{#ordinal}}  {{/ordinal}}', detail: "expression"},
         {label: "conditional", type: "text",apply:'{{#conditional}}  :  |  {{/conditional}}', detail: "expression"},
         {label: "pluralize", type: "text",apply:'{{#pluralize }}  :  |  {{/pluralize }}', detail: "expression"},
