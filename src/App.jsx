@@ -6,8 +6,7 @@ import yaml from 'yaml';
 import getKeys from "./getKeys";
 
 export default function App() {
-  const templateData = `
-- template: &likely
+  const templateData = `- template: &likely
   - paragraph: |
     
 `;
