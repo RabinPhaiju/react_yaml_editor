@@ -141,7 +141,7 @@ export function YamlEditor({
     }
 
     if(
-    context.matchBefore(/\*\w+/) !=null
+    context.matchBefore(/\*\w+/) !=null && context.matchBefore(/\*\*\w+/) ==null
     ){ 
       return { from: word.from,options: anchorSuggestions }
     }
