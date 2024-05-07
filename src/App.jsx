@@ -193,10 +193,10 @@ const contextSuggestion = {
       "has_events": false,
       "limit_in_years": 0.25,
       "limit_in_words": "",
-      "limit_date": ""
+      "limit_date": "",
+      "period_in_words":"",
   },
   "user_id": 8,
-  "period_in_words":"",
   "has_multiple_suggestions":"",
 }
 
