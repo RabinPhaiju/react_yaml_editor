@@ -20,6 +20,7 @@ const partialContextSuggestion = {
   "simple_algorithm/astrological_insigth": "",
   "timeline/dates_and": "",
   "timeline/dates_to": "",
+  "question/description_suggestions": "",
 } 
 
 const defaultSuggestions = [ 
@@ -194,7 +195,9 @@ const contextSuggestion = {
       "limit_in_words": "",
       "limit_date": ""
   },
-  "user_id": 8
+  "user_id": 8,
+  "period_in_words":"",
+  "has_multiple_suggestions":"",
 }
 
 const [contextSuggestions, setContextSuggestions] = useState([]);
