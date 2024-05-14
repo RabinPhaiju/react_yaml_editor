@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import useLocalStorage from "./components/useLocalStorage";
 import "./App.css";
 import parser from "js-yaml";
 import { YamlEditor } from "./yamlEditor";
@@ -6,9 +7,34 @@ import yaml from 'yaml';
 import getKeys from "./getKeys";
 
 export default function App() {
-  const templateData = `- template: &likely
+  const templateData = `- template: &basic_description_title
+  - paragraph:
+      end: ""
+      content:
+        - text: "### Basic Description"
+
+- template: &prediction_title
+  - paragraph:
+      end: ""
+      content:
+        - text: "### Prediction"
+
+- template: &advice_title
+  - paragraph:
+      end: ""
+      content:
+        - text: "### Advice"
+
+- template: &additional_note_title
+  - paragraph:
+      end: ""
+      content:
+        - text: "### Additional Note"
+
+- template: &likely                  
+  - text: *basic_description_title
   - paragraph: |
-    
+
 `;
 
 const partialContextSuggestion = {
@@ -204,7 +230,8 @@ const [contextSuggestions, setContextSuggestions] = useState([]);
 const [partialSuggestions, setPartialSuggestions] = useState(defaultSuggestions);
 const [linkSuggestions, setLinkSuggestions] = useState([]);
 const [anchorSuggestions,setAnchorSuggestions] = useState();
-const [ data, setData ] = useState(templateData);
+const [data, setData] = useLocalStorage("template", templateData)
+// const [ data, setData ] = useState(templateData);
 
 useEffect(()=>{
   updateSuggestions(contextSuggestion,partialContextSuggestion,externalLink);
@@ -249,6 +276,7 @@ useEffect(()=>{
   return (
     <div className="App">
         <div style={{position:'relative'}} >
+        <button class="button-85" onClick={() => setData('')}>Clear</button>
 
         <YamlEditor 
           data={data.length > 0 ? data : ''} 

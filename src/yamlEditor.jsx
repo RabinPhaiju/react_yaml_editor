@@ -175,12 +175,15 @@ export function YamlEditor({
     return {
       from: word.from,
       options: [
-        {label: "choice", type: "text",apply:'{{#choice}}  ||  {{/choice}}', detail: "expression"},
-        {label: "conjunction", type: "text",apply:'{{#conjunction}}  {{/conjunction}}', detail: "expression"},
-        {label: "ordinal", type: "text",apply:'{{#ordinal}}  {{/ordinal}}', detail: "expression"},
+        {label: "content", type: "text",apply:`content:`, detail: "shortcut"},
+        {label: "end", type: "text",apply:'end: ""', detail: "shortcut"},
+        
         {label: "conditional", type: "text",apply:'{{#conditional}}  :  |  {{/conditional}}', detail: "expression"},
-        {label: "pluralize", type: "text",apply:'{{#pluralize }}  :  |  {{/pluralize }}', detail: "expression"},
+        {label: "conjunction", type: "text",apply:'{{#conjunction}}  {{/conjunction}}', detail: "expression"},
         {label: "in_words", type: "text",apply:'{{#in_words}}  {{/in_words}}', detail: "expression"},
+        {label: "choice", type: "text",apply:'{{#choice}}  ||  {{/choice}}', detail: "expression"},
+        {label: "ordinal", type: "text",apply:'{{#ordinal}}  {{/ordinal}}', detail: "expression"},
+        {label: "pluralize", type: "text",apply:'{{#pluralize }}  :  |  {{/pluralize }}', detail: "expression"},
         {label: "count", type: "text",apply:'{{#count}}  {{/count}}', detail: "expression"},
         {label: "ext_link", type: "text",apply:'[Link]({{#ext_link}}{{/ext_link}})', detail: "expression"},
       ],
