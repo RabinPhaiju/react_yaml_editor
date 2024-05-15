@@ -8,33 +8,33 @@ import getKeys from "./getKeys";
 
 export default function App() {
   const templateData = `
-        - template: &basic_description_title
-            - paragraph:
-                end: ""
-                content:
-                  - text: "### Basic Description"
+- template: &basic_description_title
+    - paragraph:
+        end: ""
+        content:
+          - text: "### Basic Description"
 
-        - template: &prediction_title
-            - paragraph:
-                end: ""
-                content:
-                  - text: "### Prediction"
+- template: &prediction_title
+    - paragraph:
+        end: ""
+        content:
+          - text: "### Prediction"
 
-        - template: &advice_title
-            - paragraph:
-                end: ""
-                content:
-                  - text: "### Advice"
+- template: &advice_title
+    - paragraph:
+        end: ""
+        content:
+          - text: "### Advice"
 
-        - template: &additional_note_title
-            - paragraph:
-                end: ""
-                content:
-                  - text: "### Additional Note"
+- template: &additional_note_title
+    - paragraph:
+        end: ""
+        content:
+          - text: "### Additional Note"
 
-        - template: &likely                  
-            - text: *basic_description_title
-            - paragraph: |
+- template: &likely                  
+    - text: *basic_description_title
+    - paragraph: |
 
 `;
 
