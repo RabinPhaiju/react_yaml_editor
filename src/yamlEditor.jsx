@@ -175,10 +175,15 @@ export function YamlEditor({
     return {
       from: word.from,
       options: [
-        {label: "content", type: "text",apply:`content:`, detail: "shortcut"},
-        {label: "end", type: "text",apply:'end: ""', detail: "shortcut"},
-        
         {label: "conditional", type: "text",apply:'{{#conditional}}  :  |  {{/conditional}}', detail: "expression"},
+        {label: "gender_conditional", type: "text",apply:'{{#conditional}} {{is_gender_male}}  :  |  {{/conditional}}', detail: "expression"},
+        {label: "he_she_conditional", type: "text",apply:'{{#conditional}} {{is_gender_male}}  : she | he {{/conditional}}', detail: "expression"},
+        {label: "husband_wife_conditional", type: "text",apply:'{{#conditional}} {{is_gender_male}}  : wife | husband {{/conditional}}', detail: "expression"},
+        {label: "boy_girl_conditional", type: "text",apply:'{{#conditional}} {{is_gender_male}}  : girlfriend | boyfriend {{/conditional}}', detail: "expression"},
+        {label: "his_her_conditional", type: "text",apply:'{{#conditional}} {{is_gender_male}}  : her | his {{/conditional}}', detail: "expression"},
+
+        {label: "self_conditional", type: "text",apply:'{{#conditional}} {{is_self}}  :  |  {{/conditional}}', detail: "expression"},
+
         {label: "conjunction", type: "text",apply:'{{#conjunction}}  {{/conjunction}}', detail: "expression"},
         {label: "in_words", type: "text",apply:'{{#in_words}}  {{/in_words}}', detail: "expression"},
         {label: "choice", type: "text",apply:'{{#choice}}  ||  {{/choice}}', detail: "expression"},
