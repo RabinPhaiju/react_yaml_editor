@@ -277,7 +277,7 @@ useEffect(()=>{
   return (
     <div className="App">
         <div style={{position:'relative'}} >
-        <button class="button-85" onClick={() => setData('')}>Clear</button>
+        <button className="button-85" onClick={() => setData('')}>Clear</button>
 
         <YamlEditor 
           data={data.length > 0 ? data : ''} 

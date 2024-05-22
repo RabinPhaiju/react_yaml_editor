@@ -100,15 +100,23 @@ export function YamlEditor({
       siblingGaps = siblingGaps + newLine.text.split('-')[0]; 
     }
 
-    if( context.matchBefore(/{{\s+\w+/) !=null || 
+    if( 
+        (context.matchBefore(/{{\s+\w+/) !=null || 
         context.matchBefore(/{{\w+/) !=null ||
         context.matchBefore(/{{ /) !=null ||
         context.matchBefore(/{{\s+/) !=null ||
-        context.matchBefore(/{{/) !=null
+        context.matchBefore(/{{/) !=null) &&
+        !(
+          context.matchBefore(/{{{\s+\w+/) !=null || 
+          context.matchBefore(/{{{\w+/) !=null ||
+          context.matchBefore(/{{{ /) !=null ||
+          context.matchBefore(/{{{\s+/) !=null ||
+          context.matchBefore(/{{{/) !=null
+        )
        ){
         return {
-        from: word.from,
-        options: contextSuggestions
+          from: word.from,
+          options: contextSuggestions
       }
     }
 
@@ -147,11 +155,18 @@ export function YamlEditor({
     }
     
     if(
-        context.matchBefore(/{{>\s+\w+/) !=null || 
+        (context.matchBefore(/{{>\s+\w+/) !=null || 
         context.matchBefore(/{{>\w+/) !=null ||
         context.matchBefore(/{{> /) !=null ||
         context.matchBefore(/{{>\s+/) !=null ||
-        context.matchBefore(/{{>/) !=null
+        context.matchBefore(/{{>/) !=null) &&
+        !(
+          context.matchBefore(/{{{>\s+\w+/) !=null || 
+          context.matchBefore(/{{{>\w+/) !=null ||
+          context.matchBefore(/{{{> /) !=null ||
+          context.matchBefore(/{{{>\s+/) !=null ||
+          context.matchBefore(/{{{>/) !=null
+        )
       ){ 
       return {
         from: word.from,
