@@ -206,6 +206,7 @@ export function YamlEditor({
         {label: "pluralize", type: "text",apply:'{{#pluralize }}  :  |  {{/pluralize }}', detail: "expression"},
         {label: "count", type: "text",apply:'{{#count}}  {{/count}}', detail: "expression"},
         {label: "ext_link", type: "text",apply:'[Link]({{#ext_link}}{{/ext_link}})', detail: "expression"},
+        {label: "has_suggestions", type: "text",apply:'{{#has_suggestions}}  {{/has_suggestions}}', detail: "expression"},
       ],
     }
   }

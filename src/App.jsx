@@ -7,7 +7,7 @@ import yaml from 'yaml';
 import getKeys from "./getKeys";
 
 export default function App() {
-  const templateData = `
+  const template1 = `
 - template: &basic_description_title
     - paragraph:
         end: ""
@@ -35,6 +35,12 @@ export default function App() {
 - template: &likely                  
     - text: *basic_description_title
     - paragraph: |
+
+`;
+
+const template2 = `
+- paragraph: |
+    
 
 `;
 
@@ -231,7 +237,7 @@ const [contextSuggestions, setContextSuggestions] = useState([]);
 const [partialSuggestions, setPartialSuggestions] = useState(defaultSuggestions);
 const [linkSuggestions, setLinkSuggestions] = useState([]);
 const [anchorSuggestions,setAnchorSuggestions] = useState();
-const [data, setData] = useLocalStorage("template", templateData)
+const [data, setData] = useLocalStorage("template", template1)
 // const [ data, setData ] = useState(templateData);
 
 useEffect(()=>{
@@ -274,10 +280,16 @@ useEffect(()=>{
     
   }
 
+  const findAndReplaceYourToTheir = () => {
+    setData(data.replace(/[Y|y]our/g,'{{their}}'));
+  }
+
   return (
     <div className="App">
         <div style={{position:'relative'}} >
-        <button className="button-85" onClick={() => setData('')}>Clear</button>
+        <button className="button-85" onClick={() => setData(template1)}>Template</button>
+        <button className="button-85" onClick={() => setData(template2)}>Q Des</button>
+        <button className="button-85" onClick={findAndReplaceYourToTheir}>Your-Their</button>
 
         <YamlEditor 
           data={data.length > 0 ? data : ''} 
