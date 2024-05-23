@@ -313,13 +313,16 @@ const findAndReplaceYourSelfToThemSelf = () => {
   return (
     <div className="App">
         <div style={{position:'relative'}} >
-        <div style={{position:'sticky',top:0,zIndex:1}}>
-          <button style={currentTab === "public" ? {backgroundColor:'teal'}:{}} className="button-85" onClick={() => setCurrentTab("public")}>Public</button>
-          <button style={currentTab === "private" ? {backgroundColor:'teal'}:{}} className="button-85" onClick={() => setCurrentTab("private")}>Private</button>
-          <button style={currentTab === "data" ? {backgroundColor:'teal'}:{}} className="button-85" onClick={() => setCurrentTab("data")}>Other</button>
-          <span>&nbsp;&nbsp;&nbsp;&nbsp;</span>
-          <button className="button-19" onClick={findAndReplaceYourToTheir}>Your-Their</button>
-          <button className="button-19" onClick={findAndReplaceYourSelfToThemSelf}>YourSelf-ThemSelf</button>
+        <div className="nav">
+          <div>
+            <button style={currentTab === "public" ? {backgroundColor:'teal'}:{}} className="button-85" onClick={() => setCurrentTab("public")}>Public</button>
+            <button style={currentTab === "private" ? {backgroundColor:'teal'}:{}} className="button-85" onClick={() => setCurrentTab("private")}>Private</button>
+            <button style={currentTab === "data" ? {backgroundColor:'teal'}:{}} className="button-85" onClick={() => setCurrentTab("data")}>Other</button>
+          </div>
+          <div className="buttons">
+            <button className="button-19" onClick={findAndReplaceYourToTheir}>Your-Their</button>
+            <button className="button-19" onClick={findAndReplaceYourSelfToThemSelf}>YourSelf-ThemSelf</button>
+          </div>
         </div>
 
         <YamlEditor 

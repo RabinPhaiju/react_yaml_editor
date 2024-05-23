@@ -6,6 +6,17 @@
   border: 1px solid #d4d4d4;
   border-radius: 6px;
 }
+.nav{
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+}
+.nav > div{
+  margin: 4px 0;
+}
 
 .code_mirror {
   padding: 2px;
