@@ -38,6 +38,7 @@ const yamlLinter = linter((view) => {
 
 export function YamlEditor({
   data,
+  currentTab,
   onChange,
   saveYaml,
   contextSuggestions,
@@ -56,13 +57,13 @@ export function YamlEditor({
       // value = parser.dump(value_object[0]);
       try{
         parser.loadAll(value);
-        onChange(value);
+        onChange(value,currentTab);
         setYamlError(null)
       }catch(e){
         // console.log(e);
         setYamlError(e?.mark?.snippet)
       }
-  }, []);
+  }, [currentTab]);
 
   function checkBracketPair(context){
     let isPair = true;

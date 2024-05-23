@@ -8,6 +8,11 @@ import getKeys from "./getKeys";
 
 export default function App() {
   const template1 = `
+- template: &likely                  
+    - paragraph: |
+        
+`;
+  const template2 = `
 - template: &basic_description_title
     - paragraph:
         end: ""
@@ -35,10 +40,10 @@ export default function App() {
 - template: &likely                  
     - text: *basic_description_title
     - paragraph: |
-
+        
 `;
 
-const template2 = `
+const template3 = `
 - paragraph: |
     
 
@@ -237,8 +242,10 @@ const [contextSuggestions, setContextSuggestions] = useState([]);
 const [partialSuggestions, setPartialSuggestions] = useState(defaultSuggestions);
 const [linkSuggestions, setLinkSuggestions] = useState([]);
 const [anchorSuggestions,setAnchorSuggestions] = useState();
-const [data, setData] = useLocalStorage("template", template1)
-// const [ data, setData ] = useState(templateData);
+const [publicData, setPublicData] = useLocalStorage("public", template1)
+const [privateData, setPrivateData] = useLocalStorage("private", template2)
+const [data, setData] = useState(template3);
+const [currentTab,setCurrentTab] = useLocalStorage("tab", "public");
 
 useEffect(()=>{
   updateSuggestions(contextSuggestion,partialContextSuggestion,externalLink);
@@ -272,27 +279,49 @@ useEffect(()=>{
 },[data])
 
 
-
-  const changeYamlData = (value) => {
+const changeYamlData = (value,cTab) => {
+  if(cTab === "public"){
+    setPublicData(prev=>( value ));
+  }else if(cTab === "private"){
+    setPrivateData(prev=>( value ));
+  }else{
     setData(prev=>( value ));
   }
-  const saveYaml = (e) => {
-    
-  }
+}
+const saveYaml = (e) => {}
 
   const findAndReplaceYourToTheir = () => {
-    setData(data.replace(/[Y|y]our/g,'{{their}}'));
+    if(currentTab === "public"){
+      setPublicData(publicData.replace(/\b[Yy]our(?!self\b)/g, '{{their}}'));
+    }else if(currentTab === "private"){
+      setPrivateData(privateData.replace(/\b[Yy]our(?!self\b)/g, '{{their}}'));
+    }else{
+      setData(data.replace(/\b[Yy]our(?!self\b)/g, '{{their}}'));
+    }
   }
 
   return (
     <div className="App">
         <div style={{position:'relative'}} >
-        <button className="button-85" onClick={() => setData(template1)}>Template</button>
-        <button className="button-85" onClick={() => setData(template2)}>Q Des</button>
-        <button className="button-85" onClick={findAndReplaceYourToTheir}>Your-Their</button>
+        <div style={{position:'sticky',top:0,zIndex:1}}>
+          <button style={currentTab === "public" ? {backgroundColor:'teal'}:{}} className="button-85" onClick={() => setCurrentTab("public")}>Public</button>
+          <button style={currentTab === "private" ? {backgroundColor:'teal'}:{}} className="button-85" onClick={() => setCurrentTab("private")}>Private</button>
+          <button style={currentTab === "data" ? {backgroundColor:'teal'}:{}} className="button-85" onClick={() => setCurrentTab("data")}>Other</button>
+          <span>&nbsp;&nbsp;&nbsp;&nbsp;</span>
+          <button className="button-85" onClick={findAndReplaceYourToTheir}>Your-Their</button>
+        </div>
 
         <YamlEditor 
-          data={data.length > 0 ? data : ''} 
+          data={
+            currentTab === "public" 
+              ? publicData ?? ''
+              : currentTab === "private" 
+                ? privateData ?? ''
+                : data.length > 0 
+                  ? data 
+                  : ''
+          } 
+          currentTab={currentTab}
           onChange={changeYamlData} 
           saveYaml={saveYaml} 
           contextSuggestions={contextSuggestions}
