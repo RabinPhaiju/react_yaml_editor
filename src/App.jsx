@@ -246,6 +246,7 @@ const [publicData, setPublicData] = useLocalStorage("public", template1)
 const [privateData, setPrivateData] = useLocalStorage("private", template2)
 const [data, setData] = useState(template3);
 const [currentTab,setCurrentTab] = useLocalStorage("tab", "public");
+const [buttons,setButtons] = useState([]);
 
 useEffect(()=>{
   updateSuggestions(contextSuggestion,partialContextSuggestion,externalLink);
@@ -277,6 +278,41 @@ useEffect(()=>{
     setAnchorSuggestions(_anchorSuggestions);
   }
 },[data])
+
+// clear buttons
+useEffect(() => {
+  const handleAction = (event) => {
+    if(event.ctrlKey == false){
+      setButtons([]);
+    }
+  };
+
+  const appDiv = document.querySelector('.code_mirror');
+  appDiv.addEventListener('click', handleAction);
+  appDiv.addEventListener('keydown', handleAction);
+
+  return () => {
+    appDiv.removeEventListener('click', handleAction);
+    appDiv.removeEventListener('keydown', handleAction);
+  };
+}, []);
+
+// detech button shortcut
+useEffect(() => {
+  const handleAction = (event) => {
+    if(event.ctrlKey && buttons.length > 0){
+      let key = event.key;
+      if(!isNaN(key)){
+        handleSuggestionButtonClick(buttons[key-1]);
+      }
+    }
+  };
+  const appDiv = document.querySelector('body');
+  appDiv.addEventListener('keypress', handleAction);
+  return () => {
+    appDiv.removeEventListener('keypress', handleAction);
+  };
+}, [buttons]);
 
 
 const changeYamlData = (value,cTab) => {
@@ -310,19 +346,47 @@ const findAndReplaceYourSelfToThemSelf = () => {
   }
 }
 
+const handleSuggestionButtonClick = (button) => {
+  let start = button.start;
+  let end = button.end;
+  let apply = button.apply;
+  
+  if(currentTab === "public"){
+    setPublicData(prev => prev.substring(0,start) + apply + prev.substring(end));
+  }else if(currentTab === "private"){
+    setPrivateData(prev => prev.substring(0,start) + apply + prev.substring(end));
+  }else{
+    setData(prev => prev.substring(0,start) + apply + prev.substring(end));
+  }
+  setButtons([]);
+}
+
+const handleCurrentTabChange = (tab)=>{
+  setCurrentTab(tab);
+  setButtons([]);
+}
+
   return (
     <div className="App">
         <div style={{position:'relative'}} >
         <div className="nav">
-          <div>
-            <button style={currentTab === "public" ? {backgroundColor:'teal'}:{}} className="button-85" onClick={() => setCurrentTab("public")}>Public</button>
-            <button style={currentTab === "private" ? {backgroundColor:'teal'}:{}} className="button-85" onClick={() => setCurrentTab("private")}>Private</button>
-            <button style={currentTab === "data" ? {backgroundColor:'teal'}:{}} className="button-85" onClick={() => setCurrentTab("data")}>Other</button>
+          <div className="actions">
+            <div>
+              <button style={currentTab === "public" ? {backgroundColor:'teal'}:{}} className="button-85" onClick={() => handleCurrentTabChange('public')}>Public</button>
+              <button style={currentTab === "private" ? {backgroundColor:'teal'}:{}} className="button-85" onClick={() => handleCurrentTabChange("private")}>Private</button>
+              <button style={currentTab === "data" ? {backgroundColor:'teal'}:{}} className="button-85" onClick={() => handleCurrentTabChange("data")}>Other</button>
+            </div>
+            <div className="buttons">
+              <button className="button-19" onClick={findAndReplaceYourToTheir}>Your-Their</button>
+              <button className="button-19" onClick={findAndReplaceYourSelfToThemSelf}>YourSelf-ThemSelf</button>
+            </div>
           </div>
-          <div className="buttons">
-            <button className="button-19" onClick={findAndReplaceYourToTheir}>Your-Their</button>
-            <button className="button-19" onClick={findAndReplaceYourSelfToThemSelf}>YourSelf-ThemSelf</button>
-          </div>
+          <div className="suggestions">
+          {buttons?.map((button,index)=>{
+              return (<button key={index} className="button-85" onClick={() => handleSuggestionButtonClick(button)} >{index+1}-{button.label}</button>)
+            })
+          }
+        </div>
         </div>
 
         <YamlEditor 
@@ -342,6 +406,8 @@ const findAndReplaceYourSelfToThemSelf = () => {
           partialSuggestions={partialSuggestions}
           anchorSuggestions = {anchorSuggestions}
           linkSuggestions={linkSuggestions}
+          buttons={buttons}
+          setButtons={setButtons}
           />
         </div>
     </div>

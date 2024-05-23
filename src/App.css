@@ -10,12 +10,16 @@
     position: sticky;
     top: 0;
     z-index: 1;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
 }
+
+.nav .actions{
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
 .nav > div{
-  margin: 4px 0;
+  padding: 2px;
 }
 
 .code_mirror {

@@ -1,4 +1,4 @@
-import React,{useCallback, useState} from "react";
+import React,{useCallback, useRef, useState,useEffect} from "react";
 import { linter, lintGutter } from "@codemirror/lint";
 import CodeMirror from "@uiw/react-codemirror";
 import * as yamlMode from "@codemirror/legacy-modes/mode/yaml";
@@ -10,7 +10,7 @@ import {EditorState} from "@codemirror/state"
 import {keymap,EditorView } from "@codemirror/view";
 import foldOnIndent from "./foldIndent";
 import {autocompletion} from "@codemirror/autocomplete";
-import isBracketsBalanced from "./checkBracketsBalanced";
+// import isBracketsBalanced from "./checkBracketsBalanced";
 
 const yaml = StreamLanguage.define(yamlMode.yaml);
 
@@ -44,11 +44,13 @@ export function YamlEditor({
   contextSuggestions,
   partialSuggestions,
   linkSuggestions,
+  buttons,
+  setButtons,
   anchorSuggestions=[],
   readOnly=false
 }) {
   const [yamlError,setYamlError] = useState(null);
-  // const editorRef = createRef();
+  const editorRef = useRef(null);
   // const valueRef = useRef(data);
 
   const _onChange = useCallback((value, viewUpdate) => {
@@ -285,12 +287,62 @@ export function YamlEditor({
 
   // },[editorRef.current])
 
+  const handleDoubleClick = (event) => {
+    if(buttons.length > 0){ setButtons([]); return; }
+    const view = editorRef.current?.view;
+    if (view) {
+      const { state } = view;
+      const pos = view.posAtCoords({ x: event.clientX, y: event.clientY });
+      if (pos !== null) {
+        const line = state.doc.lineAt(pos);
+        // Get the text of the line
+        const lineText = line.text;
+        // Get the position within the line
+        const posInLine = pos - line.from;
+        // Find the word boundaries
+        const start = lineText.lastIndexOf(' ', posInLine - 1) + 1;
+        let end = lineText.indexOf(' ', posInLine);
+        if(end == -1){ end = lineText.length; }
+        // Get word pos in doc
+        const startInDoc = line.from + start;
+        const endInDoc = line.from + end;
+        const word = lineText.slice(start, end);
+
+        if(word == 'you'){
+          let buttons = [
+            { start:startInDoc,
+              end:endInDoc === -1 ? line.to : endInDoc,
+              label: 'them',
+              apply:'{{them}}',
+            },
+            { start:startInDoc,
+              end:endInDoc === -1 ? line.to : endInDoc,
+              label: 'they',
+              apply:'{{they}}',
+            }
+          ];
+          setButtons(prev => buttons);
+        }
+      }
+    }
+  };
+
+  useEffect(() => {
+    const editor = editorRef.current?.editor;
+    if (editor) {
+      editor.addEventListener('dblclick', handleDoubleClick);
+      return () => {
+        editor.removeEventListener('dblclick', handleDoubleClick);
+      };
+    }
+  }, [editorRef.current]);
+
   return (
     <div className="code_mirror">
       <span>{yamlError}</span>
       {/* <div ref={editorRef}/> */}
       <CodeMirror
-        // ref={editorRef}
+        ref={editorRef}
         height= {readOnly ? '200px' : null}
         onChange={_onChange}
         value={data}
