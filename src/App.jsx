@@ -290,15 +290,25 @@ const changeYamlData = (value,cTab) => {
 }
 const saveYaml = (e) => {}
 
-  const findAndReplaceYourToTheir = () => {
-    if(currentTab === "public"){
-      setPublicData(publicData.replace(/\b[Yy]our(?!self\b)/g, '{{their}}'));
-    }else if(currentTab === "private"){
-      setPrivateData(privateData.replace(/\b[Yy]our(?!self\b)/g, '{{their}}'));
-    }else{
-      setData(data.replace(/\b[Yy]our(?!self\b)/g, '{{their}}'));
-    }
+const findAndReplaceYourToTheir = () => {
+  if(currentTab === "public"){
+    setPublicData(publicData.replace(/\b[Yy]our(?!self\b)/g, '{{their}}'));
+  }else if(currentTab === "private"){
+    setPrivateData(privateData.replace(/\b[Yy]our(?!self\b)/g, '{{their}}'));
+  }else{
+    setData(data.replace(/\b[Yy]our(?!self\b)/g, '{{their}}'));
   }
+}
+
+const findAndReplaceYourSelfToThemSelf = () => {
+  if(currentTab === "public"){
+    setPublicData(publicData.replace(/\b[Yy]ourself/g, '{{themself}}'));
+  }else if(currentTab === "private"){
+    setPrivateData(privateData.replace(/\b[Yy]ourself/g, '{{themself}}'));
+  }else{
+    setData(data.replace(/\b[Yy]ourself/g, '{{themself}}'));
+  }
+}
 
   return (
     <div className="App">
@@ -308,7 +318,8 @@ const saveYaml = (e) => {}
           <button style={currentTab === "private" ? {backgroundColor:'teal'}:{}} className="button-85" onClick={() => setCurrentTab("private")}>Private</button>
           <button style={currentTab === "data" ? {backgroundColor:'teal'}:{}} className="button-85" onClick={() => setCurrentTab("data")}>Other</button>
           <span>&nbsp;&nbsp;&nbsp;&nbsp;</span>
-          <button className="button-85" onClick={findAndReplaceYourToTheir}>Your-Their</button>
+          <button className="button-19" onClick={findAndReplaceYourToTheir}>Your-Their</button>
+          <button className="button-19" onClick={findAndReplaceYourSelfToThemSelf}>YourSelf-ThemSelf</button>
         </div>
 
         <YamlEditor 
