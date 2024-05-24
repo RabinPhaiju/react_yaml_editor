@@ -278,6 +278,16 @@ export function YamlEditor({
     }
   }
 
+  const makeAltActon = (index,cbuttons) => (view) => {
+    if(index > cbuttons.length){ return false; }
+    const button = cbuttons[index-1];
+    let start = button.start;
+    let end = button.end;
+    let apply = button.apply;
+
+    view.dispatch({changes: { from: start,to: end,insert: `${apply}` }})
+  }
+
   const extensions = [
     yaml,
     lintGutter(),
@@ -288,7 +298,16 @@ export function YamlEditor({
     // keymap.of(defaultKeymap),
     keymap.of([
       { key: 'Ctrl-m', run: moveToLine },
-      { key: 'Ctrl-q', run: makePlural },
+      { key: 'Ctrl-Shift-q', run: makePlural },
+      { key: 'Ctrl-Shift-1', run: makeAltActon(1,buttons) },
+      { key: 'Ctrl-Shift-2', run: makeAltActon(2,buttons) },
+      { key: 'Ctrl-Shift-3', run: makeAltActon(3,buttons) },
+      { key: 'Ctrl-Shift-4', run: makeAltActon(4,buttons) },
+      { key: 'Ctrl-Shift-5', run: makeAltActon(5,buttons) },
+      { key: 'Ctrl-Shift-6', run: makeAltActon(6,buttons) },
+      { key: 'Ctrl-Shift-7', run: makeAltActon(7,buttons) },
+      { key: 'Ctrl-Shift-8', run: makeAltActon(8,buttons) },
+      { key: 'Ctrl-Shift-9', run: makeAltActon(9,buttons) },
     ]),
     autocompletion({ override: [
       myCompletions,

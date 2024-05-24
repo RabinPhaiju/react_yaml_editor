@@ -54,14 +54,7 @@ useEffect(()=>{
 // clear buttons
 useEffect(() => {
   const handleAction = (event) => {
-    const keyCodes = [49, 50, 51, 52, 53, 54, 55, 56, 57];
-    if(keyCodes.includes(event.keyCode) && buttons.length > 0){
-      let key = event.key;
-      if(!isNaN(key)){
-        handleSuggestionButtonClick(buttons[key-1]);
-      }
-    }
-    if(event.keyCode == 17 )return;
+    if(event.keyCode == 17 || event.keyCode == 16  )return;
     if(buttons.length > 0){
       setButtons([]);
     }
@@ -107,21 +100,6 @@ const findAndReplaceYourSelfToThemSelf = () => {
   }else{
     setData(data.replace(/\b[Yy]ourself/g, '{{themself}}'));
   }
-}
-
-const handleSuggestionButtonClick = (button) => {
-  let start = button.start;
-  let end = button.end;
-  let apply = button.apply;
-  
-  if(currentTab === "public"){
-    setPublicData(prev => prev.substring(0,start) + apply + prev.substring(end));
-  }else if(currentTab === "private"){
-    setPrivateData(prev => prev.substring(0,start) + apply + prev.substring(end));
-  }else{
-    setData(prev => prev.substring(0,start) + apply + prev.substring(end));
-  }
-  setButtons([]);
 }
 
 const handleCurrentTabChange = (tab)=>{
