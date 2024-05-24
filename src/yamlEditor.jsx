@@ -57,6 +57,10 @@ export function YamlEditor({
     const editor = editorRef.current?.editor;
 
     const handleAction = (event) => {
+      if(event.key == 'ArrowLeft' || event.key == 'ArrowRight'){
+        checkArrowHorizontalContext();
+        return;
+      }
       if(event.keyCode == 17 || event.keyCode == 16  )return;
       if(buttons.length > 0){
         setButtons([]);
@@ -109,21 +113,25 @@ export function YamlEditor({
     return true
   }
 
-  function makePlural(view) {
-    const {state} = view;
-    let mainWord = state.selection.main
-    let pos = mainWord.from
-    
+  const getWordWithPos = (state)=>{
+    const mainWord = state.selection.main
+    const pos = mainWord.from
     const line = state.doc.lineAt(pos);
     // Get the text of the line
     const lineText = line.text;
     // Get the position within the line
     const posInLine = pos - line.from;
     // Find the word boundaries
-    let start = lineText.lastIndexOf(' ', posInLine - 1) + 1;
+    const start = lineText.lastIndexOf(' ', posInLine - 1) + 1;
     let end = lineText.indexOf(' ', posInLine);
     if(end == -1){ end = lineText.length; }
-    let word = lineText.slice(start, end);
+    const word = lineText.slice(start, end);
+    return [start,end,word,line,lineText]
+  }
+
+  function makePlural(view) {
+    const {state} = view;
+    let [start,end,word,line,lineText] = getWordWithPos(state);
 
     if(/\W$/.test(word)){  // if any non charater is at the end
       end = end-1
@@ -137,6 +145,7 @@ export function YamlEditor({
     const startInDoc = line.from + start;
     const endInDoc = line.from + end;
     word = lineText.slice(start, end);
+    if(word.length < 2){ return false; }
 
     // replace the word
     view.dispatch({changes: { from: startInDoc,to: endInDoc,insert: `{{#conditional }} {{is_self}} : ${word} | ${handlePlur(word)} {{/conditional }}` }})
@@ -160,6 +169,7 @@ export function YamlEditor({
     let apply = button.apply;
 
     view.dispatch({changes: { from: start,to: end,insert: `${apply}` }})
+    view.dispatch({selection: {anchor: start+apply.length}, userEvent: "select",scrollIntoView: true})
   }
 
   const extensions = [
@@ -173,6 +183,7 @@ export function YamlEditor({
     keymap.of([
       { key: 'Ctrl-m', run: moveToLine },
       { key: 'Ctrl-Shift-q', run: makePlural },
+      { key: 'Ctrl-Shift-c', run: makeAltActon(1,buttons) },
       { key: 'Ctrl-Shift-1', run: makeAltActon(1,buttons) },
       { key: 'Ctrl-Shift-2', run: makeAltActon(2,buttons) },
       { key: 'Ctrl-Shift-3', run: makeAltActon(3,buttons) },
@@ -233,25 +244,61 @@ export function YamlEditor({
 
         const startInDoc = line.from + start;
         const endInDoc = line.from + end;
-
-        if(word == 'you' || word == 'You'){
-          let buttons = [
-            { start:startInDoc,
-              end:endInDoc === -1 ? line.to : endInDoc,
-              label: 'them',
-              apply:'{{them}}',
-            },
-            { start:startInDoc,
-              end:endInDoc === -1 ? line.to : endInDoc,
-              label: 'they',
-              apply:'{{they}}',
-            }
-          ];
-          setButtons(buttons);
-        }else{
-            
-        }
+        createSuggestionButton(word,startInDoc,endInDoc,line);
       }
+    }
+  };
+
+  const createSuggestionButton = (word,startInDoc,endInDoc,line) => {
+    if(word == 'you' || word == 'You'){
+      let buttons = [
+        { start:startInDoc,
+          end:endInDoc === -1 ? line.to : endInDoc,
+          label: 'them',
+          apply:'{{them}}',
+        },
+        { start:startInDoc,
+          end:endInDoc === -1 ? line.to : endInDoc,
+          label: 'they',
+          apply:'{{they}}',
+        }
+      ];
+      setButtons(buttons);
+    }else if(word == 'is' || word == 'are'){
+      let buttons = [
+        { start:startInDoc,
+          end:endInDoc === -1 ? line.to : endInDoc,
+          label: 'is_are',
+          apply:'{{is_are}}',
+        }
+      ];
+      setButtons(buttons);
+    }else{
+        setButtons([]);
+    }
+  }
+
+  const checkArrowHorizontalContext = () => {
+    const view = editorRef.current?.view;
+    if (view) {
+      const {state} = view;
+      let [start,end,word,line,lineText] = getWordWithPos(state);
+  
+      if(/\W$/.test(word)){  // if any non charater is at the end
+        end = end-1
+       }else if(/^\W/.test(word)){ // if any non charater is at the start
+        start = start+1
+      }else if(/\w\W+\w/.test(word)){ // if any non charater is in between
+        return false;
+      }
+  
+      // Get word pos in doc
+      const startInDoc = line.from + start;
+      const endInDoc = line.from + end;
+      word = lineText.slice(start, end);
+
+      createSuggestionButton(word,startInDoc,endInDoc,line);
+      return true;
     }
   };
 
@@ -292,9 +339,8 @@ export function YamlEditor({
         <div className="buttons">
           <button className="button-19" onClick={() => findAndReplace('your')}>Your-Their</button>
           <button className="button-19" onClick={() => findAndReplace('yourself')}>YourSelf-ThemSelf</button>
-        </div>
-        <div className="suggestions">
-          {buttons?.map((button,index)=>{
+          {
+            buttons?.map((button,index)=>{
               return (<button key={index} className="button-85" onClick={() => handleSuggestionButtonClick(button)} >{index+1}-{button.label}</button>)
             })
           }
