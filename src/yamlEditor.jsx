@@ -279,8 +279,8 @@ export function YamlEditor({
     // EditorState.allowMultipleSelections.of(true),
     // keymap.of(defaultKeymap),
     keymap.of([
-      { key: 'Ctrl-m', run: moveToLine },
-      { key: 'Ctrl-w', run: makePlural },
+      { key: 'Alt-m', run: moveToLine },
+      { key: 'Alt-w', run: makePlural },
     ]),
     autocompletion({ override: [
       myCompletions,
@@ -329,7 +329,6 @@ export function YamlEditor({
   // },[editorRef.current])
 
   const handleDoubleClick = (event) => {
-    if(buttons.length > 0){ setButtons([]); return; }
     const view = editorRef.current?.view;
     if (view) {
       const { state } = view;

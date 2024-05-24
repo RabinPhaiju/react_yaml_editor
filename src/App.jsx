@@ -18,6 +18,7 @@ const [privateData, setPrivateData] = useLocalStorage("private", template2)
 const [data, setData] = useState(template3);
 const [currentTab,setCurrentTab] = useLocalStorage("tab", "public");
 const [buttons,setButtons] = useState([]);
+const [currentLine,setCurrentLine] = useState(null);
 
 const  updateSuggestions =((context,partial_context,externalLink) => {
   let context_suggestions = [context].flatMap(obj => getKeys(obj,'text','context'));
@@ -34,6 +35,10 @@ const  updateSuggestions =((context,partial_context,externalLink) => {
 })
 
 useEffect(()=>{
+  updateSuggestions(contextSuggestion,partialContextSuggestion,externalLink);
+},[])
+
+useEffect(()=>{
   const regex = new RegExp(/&\w+?\w+/,'g');
   let newData = data?.match(regex);
   if(newData !=null){
@@ -46,11 +51,11 @@ useEffect(()=>{
   }
 },[data])
 
+// clear buttons
 useEffect(() => {
-  updateSuggestions(contextSuggestion,partialContextSuggestion,externalLink);
-  // clear buttons
   const handleAction = (event) => {
-    if(event.ctrlKey == false){
+    if(event.keyCode == 18 )return;
+    if(buttons.length > 0){
       setButtons([]);
     }
   };
@@ -63,12 +68,12 @@ useEffect(() => {
     appDiv.removeEventListener('click', handleAction);
     appDiv.removeEventListener('keydown', handleAction);
   };
-}, []);
+}, [buttons]);
 
 // detech button shortcut
 useEffect(() => {
   const handleAction = (event) => {
-    if(event.ctrlKey && buttons.length > 0){
+    if(event.keyCode == 18 && buttons.length > 0){
       let key = event.key;
       if(!isNaN(key)){
         handleSuggestionButtonClick(buttons[key-1]);
