@@ -229,7 +229,7 @@ export function YamlEditor({
         // Get the position within the line
         const posInLine = pos - line.from;
         // Find the word boundaries
-        const start = lineText.lastIndexOf(' ', posInLine - 1) + 1;
+        let start = lineText.lastIndexOf(' ', posInLine - 1) + 1;
         let end = lineText.indexOf(' ', posInLine);
         if(end == -1){ end = lineText.length; }
         // Get word pos in doc
