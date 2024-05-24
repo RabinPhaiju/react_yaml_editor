@@ -54,7 +54,7 @@ useEffect(()=>{
 // clear buttons
 useEffect(() => {
   const handleAction = (event) => {
-    if(event.keyCode == 18 )return;
+    if(event.keyCode == 17 )return;
     if(buttons.length > 0){
       setButtons([]);
     }
@@ -73,7 +73,7 @@ useEffect(() => {
 // detech button shortcut
 useEffect(() => {
   const handleAction = (event) => {
-    if(event.keyCode == 18 && buttons.length > 0){
+    if(event.keyCode == 17 && buttons.length > 0){
       let key = event.key;
       if(!isNaN(key)){
         handleSuggestionButtonClick(buttons[key-1]);

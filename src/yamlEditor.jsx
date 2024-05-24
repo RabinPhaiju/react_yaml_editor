@@ -10,7 +10,7 @@ import {EditorState} from "@codemirror/state"
 import {keymap,EditorView } from "@codemirror/view";
 import foldOnIndent from "./foldIndent";
 import {autocompletion} from "@codemirror/autocomplete";
-import pluralize from "pluralize";
+import plur from 'plur';
 // import isBracketsBalanced from "./checkBracketsBalanced";
 
 const yaml = StreamLanguage.define(yamlMode.yaml);
@@ -265,9 +265,17 @@ export function YamlEditor({
     word = lineText.slice(start, end);
 
     // replace the word
-    view.dispatch({changes: { from: startInDoc,to: endInDoc,insert: `{{#conditional }} {{is_self}} : ${word} | ${pluralize(word)} {{/conditional }}` }})
+    view.dispatch({changes: { from: startInDoc,to: endInDoc,insert: `{{#conditional }} {{is_self}} : ${word} | ${handlePlur(word)} {{/conditional }}` }})
 
     return true;
+  }
+
+  const handlePlur = (word) => {
+    if(word == 'do'){
+      return 'does';
+    }else{
+      return plur(word);
+    }
   }
 
   const extensions = [
@@ -279,8 +287,8 @@ export function YamlEditor({
     // EditorState.allowMultipleSelections.of(true),
     // keymap.of(defaultKeymap),
     keymap.of([
-      { key: 'Alt-m', run: moveToLine },
-      { key: 'Alt-w', run: makePlural },
+      { key: 'Ctrl-m', run: moveToLine },
+      { key: 'Ctrl-w', run: makePlural },
     ]),
     autocompletion({ override: [
       myCompletions,
