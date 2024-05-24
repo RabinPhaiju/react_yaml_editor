@@ -54,6 +54,13 @@ useEffect(()=>{
 // clear buttons
 useEffect(() => {
   const handleAction = (event) => {
+    const keyCodes = [49, 50, 51, 52, 53, 54, 55, 56, 57];
+    if(keyCodes.includes(event.keyCode) && buttons.length > 0){
+      let key = event.key;
+      if(!isNaN(key)){
+        handleSuggestionButtonClick(buttons[key-1]);
+      }
+    }
     if(event.keyCode == 17 )return;
     if(buttons.length > 0){
       setButtons([]);
@@ -67,23 +74,6 @@ useEffect(() => {
   return () => {
     appDiv.removeEventListener('click', handleAction);
     appDiv.removeEventListener('keydown', handleAction);
-  };
-}, [buttons]);
-
-// detech button shortcut
-useEffect(() => {
-  const handleAction = (event) => {
-    if(event.keyCode == 17 && buttons.length > 0){
-      let key = event.key;
-      if(!isNaN(key)){
-        handleSuggestionButtonClick(buttons[key-1]);
-      }
-    }
-  };
-  const appDiv = document.querySelector('body');
-  appDiv.addEventListener('keypress', handleAction);
-  return () => {
-    appDiv.removeEventListener('keypress', handleAction);
   };
 }, [buttons]);
 

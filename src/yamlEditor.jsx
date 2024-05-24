@@ -356,7 +356,7 @@ export function YamlEditor({
         const endInDoc = line.from + end;
         const word = lineText.slice(start, end);
 
-        if(word == 'you'){
+        if(word == 'you' || word == 'You'){
           let buttons = [
             { start:startInDoc,
               end:endInDoc === -1 ? line.to : endInDoc,
