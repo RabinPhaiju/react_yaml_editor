@@ -288,7 +288,7 @@ export function YamlEditor({
     // keymap.of(defaultKeymap),
     keymap.of([
       { key: 'Ctrl-m', run: moveToLine },
-      { key: 'Ctrl-w', run: makePlural },
+      { key: 'Ctrl-q', run: makePlural },
     ]),
     autocompletion({ override: [
       myCompletions,
