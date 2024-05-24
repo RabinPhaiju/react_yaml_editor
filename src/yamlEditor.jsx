@@ -10,6 +10,7 @@ import {EditorState} from "@codemirror/state"
 import {keymap,EditorView } from "@codemirror/view";
 import foldOnIndent from "./foldIndent";
 import {autocompletion} from "@codemirror/autocomplete";
+import pluralize from "pluralize";
 // import isBracketsBalanced from "./checkBracketsBalanced";
 
 const yaml = StreamLanguage.define(yamlMode.yaml);
@@ -221,14 +222,53 @@ export function YamlEditor({
   //   // _view?.dispatch({ userEvent: "unselect" });
   // },[currentContext])
 
-  // function moveToLine(view) {
-  //   let line = prompt("Which line?")
-  //   if (!/^\d+$/.test(line) || +line <= 0 || +line > view.state.doc.lines)
-  //     return false
-  //   let pos = view.state.doc.line(+line).from
-  //   view.dispatch({selection: {anchor: pos}, userEvent: "select"})
-  //   return true
-  // }
+  function moveToLine(view) {
+    let line = prompt("Which line?")
+    if (!/^\d+$/.test(line) || +line <= 0 || +line > view.state.doc.lines)
+      return false
+
+    let currentLine = view.state.doc.line(+line)
+    let text = currentLine.text
+    let pos = currentLine.from
+    let numberofSpacesBeforeText = text.match(/^\s*/)[0].length
+    view.dispatch({selection: {anchor: pos+numberofSpacesBeforeText}, userEvent: "select",scrollIntoView: true})
+    return true
+  }
+
+  function makePlural(view) {
+    const {state} = view;
+    let mainWord = state.selection.main
+    let pos = mainWord.from
+    
+    const line = state.doc.lineAt(pos);
+    // Get the text of the line
+    const lineText = line.text;
+    // Get the position within the line
+    const posInLine = pos - line.from;
+    // Find the word boundaries
+    let start = lineText.lastIndexOf(' ', posInLine - 1) + 1;
+    let end = lineText.indexOf(' ', posInLine);
+    if(end == -1){ end = lineText.length; }
+    let word = lineText.slice(start, end);
+
+    if(/\W$/.test(word)){  // if any non charater is at the end
+      end = end-1
+     }else if(/^\W/.test(word)){ // if any non charater is at the start
+      start = start+1
+    }else if(/\w\W+\w/.test(word)){ // if any non charater is in between
+      return false;
+    }
+
+    // Get word pos in doc
+    const startInDoc = line.from + start;
+    const endInDoc = line.from + end;
+    word = lineText.slice(start, end);
+
+    // replace the word
+    view.dispatch({changes: { from: startInDoc,to: endInDoc,insert: `{{#conditional }} {{is_self}} : ${word} | ${pluralize(word)} {{/conditional }}` }})
+
+    return true;
+  }
 
   const extensions = [
     yaml,
@@ -238,9 +278,10 @@ export function YamlEditor({
     EditorView.lineWrapping,
     // EditorState.allowMultipleSelections.of(true),
     // keymap.of(defaultKeymap),
-    // keymap.of([
-    //   { key: 'Ctrl-m', run: moveToLine },
-    // ]),
+    keymap.of([
+      { key: 'Ctrl-m', run: moveToLine },
+      { key: 'Ctrl-w', run: makePlural },
+    ]),
     autocompletion({ override: [
       myCompletions,
       // completeFromList(
@@ -321,7 +362,9 @@ export function YamlEditor({
               apply:'{{they}}',
             }
           ];
-          setButtons(prev => buttons);
+          setButtons(buttons);
+        }else{
+            
         }
       }
     }
