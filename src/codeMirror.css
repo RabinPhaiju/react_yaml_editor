@@ -1,8 +1,16 @@
 .code_mirror {
     padding: 2px;
-    margin-bottom: 4px;
     border-color: #d4d4d4;
     border-style: solid;
-    border-width: 2px;
-    max-width: 880px;
+}
+
+.code_mirror > .actions{
+    position: sticky;
+    z-index: 1;
+    top: 30px;
+    background-color: #d4d4d499;
+}
+
+.code_mirror > .actions > .suggestions{
+    padding: 2px;
 }

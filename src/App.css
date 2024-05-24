@@ -10,16 +10,9 @@
     position: sticky;
     top: 0;
     z-index: 1;
-}
-
-.nav .actions{
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-}
-
-.nav > div{
-  padding: 2px;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 2px;
 }
 
 .code_mirror {

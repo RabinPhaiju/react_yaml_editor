@@ -17,8 +17,6 @@ const [publicData, setPublicData] = useLocalStorage("public", template1)
 const [privateData, setPrivateData] = useLocalStorage("private", template2)
 const [data, setData] = useState(template3);
 const [currentTab,setCurrentTab] = useLocalStorage("tab", "public");
-const [buttons,setButtons] = useState([]);
-const [currentLine,setCurrentLine] = useState(null);
 
 const  updateSuggestions =((context,partial_context,externalLink) => {
   let context_suggestions = [context].flatMap(obj => getKeys(obj,'text','context'));
@@ -51,26 +49,6 @@ useEffect(()=>{
   }
 },[data])
 
-// clear buttons
-useEffect(() => {
-  const handleAction = (event) => {
-    if(event.keyCode == 17 || event.keyCode == 16  )return;
-    if(buttons.length > 0){
-      setButtons([]);
-    }
-  };
-
-  const appDiv = document.querySelector('.code_mirror');
-  appDiv.addEventListener('click', handleAction);
-  appDiv.addEventListener('keydown', handleAction);
-
-  return () => {
-    appDiv.removeEventListener('click', handleAction);
-    appDiv.removeEventListener('keydown', handleAction);
-  };
-}, [buttons]);
-
-
 const changeYamlData = (value,cTab) => {
   if(cTab === "public"){
     setPublicData(prev=>( value ));
@@ -82,52 +60,17 @@ const changeYamlData = (value,cTab) => {
 }
 const saveYaml = (e) => {}
 
-const findAndReplaceYourToTheir = () => {
-  if(currentTab === "public"){
-    setPublicData(publicData.replace(/\b[Yy]our(?!self\b)/g, '{{their}}'));
-  }else if(currentTab === "private"){
-    setPrivateData(privateData.replace(/\b[Yy]our(?!self\b)/g, '{{their}}'));
-  }else{
-    setData(data.replace(/\b[Yy]our(?!self\b)/g, '{{their}}'));
-  }
-}
-
-const findAndReplaceYourSelfToThemSelf = () => {
-  if(currentTab === "public"){
-    setPublicData(publicData.replace(/\b[Yy]ourself/g, '{{themself}}'));
-  }else if(currentTab === "private"){
-    setPrivateData(privateData.replace(/\b[Yy]ourself/g, '{{themself}}'));
-  }else{
-    setData(data.replace(/\b[Yy]ourself/g, '{{themself}}'));
-  }
-}
-
 const handleCurrentTabChange = (tab)=>{
   setCurrentTab(tab);
-  setButtons([]);
 }
 
   return (
     <div className="App">
-        <div style={{position:'relative'}} >
+        <div>
         <div className="nav">
-          <div className="actions">
-            <div>
-              <button style={currentTab === "public" ? {backgroundColor:'teal'}:{}} className="button-85" onClick={() => handleCurrentTabChange('public')}>Public</button>
-              <button style={currentTab === "private" ? {backgroundColor:'teal'}:{}} className="button-85" onClick={() => handleCurrentTabChange("private")}>Private</button>
-              <button style={currentTab === "data" ? {backgroundColor:'teal'}:{}} className="button-85" onClick={() => handleCurrentTabChange("data")}>Other</button>
-            </div>
-            <div className="buttons">
-              <button className="button-19" onClick={findAndReplaceYourToTheir}>Your-Their</button>
-              <button className="button-19" onClick={findAndReplaceYourSelfToThemSelf}>YourSelf-ThemSelf</button>
-            </div>
-          </div>
-          <div className="suggestions">
-          {buttons?.map((button,index)=>{
-              return (<button key={index} className="button-85" onClick={() => handleSuggestionButtonClick(button)} >{index+1}-{button.label}</button>)
-            })
-          }
-        </div>
+          <button style={currentTab === "public" ? {backgroundColor:'teal'}:{}} className="button-85" onClick={() => handleCurrentTabChange('public')}>Public</button>
+          <button style={currentTab === "private" ? {backgroundColor:'teal'}:{}} className="button-85" onClick={() => handleCurrentTabChange("private")}>Private</button>
+          <button style={currentTab === "data" ? {backgroundColor:'teal'}:{}} className="button-85" onClick={() => handleCurrentTabChange("data")}>Other</button>
         </div>
 
         <YamlEditor 
@@ -147,8 +90,6 @@ const handleCurrentTabChange = (tab)=>{
           partialSuggestions={partialSuggestions}
           anchorSuggestions = {anchorSuggestions}
           linkSuggestions={linkSuggestions}
-          buttons={buttons}
-          setButtons={setButtons}
           />
         </div>
     </div>

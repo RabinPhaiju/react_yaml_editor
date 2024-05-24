@@ -5,12 +5,13 @@ import * as yamlMode from "@codemirror/legacy-modes/mode/yaml";
 import { StreamLanguage} from "@codemirror/language";
 import parser from "js-yaml";
 import { githubLight,githubDark } from "@uiw/codemirror-theme-github";
-// import "./style.css";
+import "./codeMirror.css";
 import {EditorState} from "@codemirror/state"
 import {keymap,EditorView } from "@codemirror/view";
 import foldOnIndent from "./foldIndent";
 import {autocompletion} from "@codemirror/autocomplete";
 import plur from 'plur';
+import myCompletions from "./utils";
 // import isBracketsBalanced from "./checkBracketsBalanced";
 
 const yaml = StreamLanguage.define(yamlMode.yaml);
@@ -45,25 +46,43 @@ export function YamlEditor({
   contextSuggestions,
   partialSuggestions,
   linkSuggestions,
-  buttons,
-  setButtons,
   anchorSuggestions=[],
   readOnly=false
 }) {
   const [yamlError,setYamlError] = useState(null);
   const editorRef = useRef(null);
-  // const valueRef = useRef(data);
+  const [buttons,setButtons] = useState([]);
+
+  useEffect(() => {
+    const editor = editorRef.current?.editor;
+
+    const handleAction = (event) => {
+      if(event.keyCode == 17 || event.keyCode == 16  )return;
+      if(buttons.length > 0){
+        setButtons([]);
+      }
+    };
+
+    if (editor) {
+      editor.addEventListener('dblclick', handleDoubleClick);
+      editor.addEventListener('click', handleAction);
+      editor.addEventListener('keydown', handleAction);
+      return () => {
+        editor.removeEventListener('dblclick', handleDoubleClick);
+        editor.removeEventListener('click', handleAction);
+        editor.removeEventListener('keydown', handleAction);
+      };
+    }
+  }, [editorRef.current],buttons);
 
   const _onChange = useCallback((value, viewUpdate) => {
-      // let value_object = parser.load(value);
-      // console.log(value_object);
-      // value = parser.dump(value_object[0]);
+      setButtons([]);
+
       try{
         parser.loadAll(value);
         onChange(value,currentTab);
         setYamlError(null)
       }catch(e){
-        // console.log(e);
         setYamlError(e?.mark?.snippet)
       }
   }, [currentTab]);
@@ -76,151 +95,6 @@ export function YamlEditor({
     }
     return isPair;
   }
-
-  function myCompletions(context) {
-    let word = context.matchBefore(/\w*/);
-    let bracket = context.matchBefore(/{.*/);
-    let bracketPartials = context.matchBefore(/{>.*/);
-    let anchor = context.matchBefore(/\*.*/);
-    let newLine = context.matchBefore(/\s*-\s\w*/);
-
-    // let test = context.matchBefore(/{{#\w+/);
-
-    // console.log('----------',test);
-
-    // console.log('newline',newLine);
-    // console.log('word',word);
-    // console.log('bracket',bracket);
-    // console.log('anchor',anchor);
-
-    if (word.from == word.to && !context.explicit){ return null}
-    if (bracket !=null && bracket.from == bracket.to && !context.explicit){ return null}
-    if (bracketPartials !=null && bracketPartials.from == bracketPartials.to && !context.explicit){ return null}
-    if (anchor !=null && anchor.from == anchor.to && !context.explicit){ return null}
-    let newGaps = " ".repeat(4);
-    let siblingGaps = " ".repeat(2);
-    if(newLine!=null){ 
-      newGaps = newGaps + newLine.text.split('-')[0]; 
-      siblingGaps = siblingGaps + newLine.text.split('-')[0]; 
-    }
-
-    if( 
-        (context.matchBefore(/{{\s+\w+/) !=null || 
-        context.matchBefore(/{{\w+/) !=null ||
-        context.matchBefore(/{{ /) !=null ||
-        context.matchBefore(/{{\s+/) !=null ||
-        context.matchBefore(/{{/) !=null) &&
-        !(
-          context.matchBefore(/{{{\s+\w+/) !=null || 
-          context.matchBefore(/{{{\w+/) !=null ||
-          context.matchBefore(/{{{ /) !=null ||
-          context.matchBefore(/{{{\s+/) !=null ||
-          context.matchBefore(/{{{/) !=null
-        )
-       ){
-        return {
-          from: word.from,
-          options: contextSuggestions
-      }
-    }
-
-    if((context.matchBefore(/-\s\w+/) !=null || context.matchBefore(/-\s/) !=null) && !(context.matchBefore(/:.*/) !=null) ){
-      return {
-        from: word.from,
-        options: [
-          {label: "text", type: "keyword", apply:'text: '},
-          {label: "paragraph", type: "keyword", apply:`paragraph: |\n${newGaps}`},
-          {label: "choice", type: "keyword", apply:`choice: `},
-          {label: "switch_case", type: "keyword", apply:`switch_case: \n${newGaps}case : case\n${newGaps}options: \n${newGaps}    `},
-          {label: "iterator", type: "keyword", apply:`iterator: \n${newGaps}elements : \n${newGaps}loop: `},
-          {label: "references", type: "keyword", apply:`references: \n${newGaps}`},
-          {label: "template", type: "keyword", apply:'template: &'},    
-          {label: "new_ref", type: "keyword", apply:`name: name\n${siblingGaps}content : \n${newGaps}`},
-          {label: "ext_link", type: "keyword", apply:`ext_link: \n${newGaps}code : code\n${newGaps}source: source`},
-          {
-            label: "action_link", 
-            type: "keyword", 
-            apply:`action_link: \n${newGaps}name : name\n${newGaps}auth: auth\n${newGaps}params:\n${newGaps}  param1: param\n${newGaps}  param2: param`
-          }, 
-          {
-            label: "app_link", 
-            type: "keyword", 
-            apply:`app_link: \n${newGaps}path : path\n${newGaps}params: \n${newGaps}  page: page\n${newGaps}  tab: tab`
-          },
-          
-        ],
-      }
-    }
-
-    if(
-    context.matchBefore(/\*\w+/) !=null && context.matchBefore(/\*\*\w+/) ==null
-    ){ 
-      return { from: word.from,options: anchorSuggestions }
-    }
-    
-    if(
-        (context.matchBefore(/{{>\s+\w+/) !=null || 
-        context.matchBefore(/{{>\w+/) !=null ||
-        context.matchBefore(/{{> /) !=null ||
-        context.matchBefore(/{{>\s+/) !=null ||
-        context.matchBefore(/{{>/) !=null) &&
-        !(
-          context.matchBefore(/{{{>\s+\w+/) !=null || 
-          context.matchBefore(/{{{>\w+/) !=null ||
-          context.matchBefore(/{{{> /) !=null ||
-          context.matchBefore(/{{{>\s+/) !=null ||
-          context.matchBefore(/{{{>/) !=null
-        )
-      ){ 
-      return {
-        from: word.from,
-        options: partialSuggestions,
-      }
-    }
-
-    if(
-        context.matchBefore(/{{#ext_link}}\s+\w+/) !=null || 
-        context.matchBefore(/{{#ext_link}}\w+/) !=null ||
-        context.matchBefore(/{{#ext_link}} /) !=null ||
-        context.matchBefore(/{{#ext_link}}\s+/) !=null ||
-        context.matchBefore(/{{#ext_link}}/) !=null
-    ){ 
-      return {
-        from: word.from,
-        options: linkSuggestions
-        }
-      }
-    
-    return {
-      from: word.from,
-      options: [
-        {label: "conditional", type: "text",apply:'{{#conditional}}  :  |  {{/conditional}}', detail: "expression"},
-        {label: "gender_conditional", type: "text",apply:'{{#conditional}} {{is_gender_male}}  :  |  {{/conditional}}', detail: "expression"},
-        {label: "he_she_conditional", type: "text",apply:'{{#conditional}} {{is_gender_male}}  : she | he {{/conditional}}', detail: "expression"},
-        {label: "husband_wife_conditional", type: "text",apply:'{{#conditional}} {{is_gender_male}}  : wife | husband {{/conditional}}', detail: "expression"},
-        {label: "boy_girl_conditional", type: "text",apply:'{{#conditional}} {{is_gender_male}}  : girlfriend | boyfriend {{/conditional}}', detail: "expression"},
-        {label: "his_her_conditional", type: "text",apply:'{{#conditional}} {{is_gender_male}}  : her | his {{/conditional}}', detail: "expression"},
-
-        {label: "self_conditional", type: "text",apply:'{{#conditional}} {{is_self}}  :  |  {{/conditional}}', detail: "expression"},
-
-        {label: "conjunction", type: "text",apply:'{{#conjunction}}  {{/conjunction}}', detail: "expression"},
-        {label: "in_words", type: "text",apply:'{{#in_words}}  {{/in_words}}', detail: "expression"},
-        {label: "choice", type: "text",apply:'{{#choice}}  ||  {{/choice}}', detail: "expression"},
-        {label: "ordinal", type: "text",apply:'{{#ordinal}}  {{/ordinal}}', detail: "expression"},
-        {label: "pluralize", type: "text",apply:'{{#pluralize }}  :  |  {{/pluralize }}', detail: "expression"},
-        {label: "count", type: "text",apply:'{{#count}}  {{/count}}', detail: "expression"},
-        {label: "ext_link", type: "text",apply:'[Link]({{#ext_link}}{{/ext_link}})', detail: "expression"},
-        {label: "has_suggestions", type: "text",apply:'{{#has_suggestions}}  {{/has_suggestions}}', detail: "expression"},
-      ],
-    }
-  }
-
-  // useEffect(() => {
-  //   let _view = editorRef.current?.view;
-  //   let length = editorRef?.current?.state?.doc?.length;
-  //   // _view?.dispatch({selection: {anchor: length, head: length}, scrollIntoView: true })
-  //   // _view?.dispatch({ userEvent: "unselect" });
-  // },[currentContext])
 
   function moveToLine(view) {
     let line = prompt("Which line?")
@@ -310,13 +184,9 @@ export function YamlEditor({
       { key: 'Ctrl-Shift-9', run: makeAltActon(9,buttons) },
     ]),
     autocompletion({ override: [
-      myCompletions,
+      (context) => myCompletions(context,contextSuggestions,anchorSuggestions,linkSuggestions,partialSuggestions)
       // completeFromList(
-      //   [
-      //     '.apple',
-      //     '.ball',
-      //     '{suggestions'
-      //   ]
+      //   ['.apple','.ball','{suggestions']
       //   )
     ],}),
   ]
@@ -333,27 +203,8 @@ export function YamlEditor({
   };
 
   const handleKeyUp = (e) => {
-    if (e.key === '[' ) {
-
-    }
+    if (e.key === '[' ) {}
   };
-
-  // const { setContainer } = useCodeMirror({
-  //   container: editorRef.current,
-  //   extensions: extensions,
-  //   value: data,
-  //   theme: readOnly? githubDark : githubLight,
-  //   height : readOnly ? '200px' : null
-  // });
-
-  // useEffect(() => {
-  //   if(editorRef.current){
-  //     setContainer(editorRef.current);
-  //     console.log(editorRef.current);
-  //     // hanleKeyPress
-  //   }
-
-  // },[editorRef.current])
 
   const handleDoubleClick = (event) => {
     const view = editorRef.current?.view;
@@ -371,9 +222,17 @@ export function YamlEditor({
         let end = lineText.indexOf(' ', posInLine);
         if(end == -1){ end = lineText.length; }
         // Get word pos in doc
+        let word = lineText.slice(start, end);
+
+        if(/\W$/.test(word)){  // if any non charater is at the end
+          end = end-1
+         }else if(/^\W/.test(word)){ // if any non charater is at the start
+          start = start+1
+        }
+        word = lineText.slice(start, end);
+
         const startInDoc = line.from + start;
         const endInDoc = line.from + end;
-        const word = lineText.slice(start, end);
 
         if(word == 'you' || word == 'You'){
           let buttons = [
@@ -396,20 +255,53 @@ export function YamlEditor({
     }
   };
 
-  useEffect(() => {
-    const editor = editorRef.current?.editor;
-    if (editor) {
-      editor.addEventListener('dblclick', handleDoubleClick);
-      return () => {
-        editor.removeEventListener('dblclick', handleDoubleClick);
-      };
+  const findAndReplace = (target) => {
+    const view = editorRef.current?.view;
+    let regex = ''
+    let value = ''
+    if(target == 'your'){
+      regex = /\b[Yy]our(?!self\b)/g;
+      value = '{{their}}';
+    }else if(target == 'yourself'){
+      regex = /\b[Yy]ourself\b/g;
+      value = '{{themself}}';
+    }else{ return;}
+    if(view){
+      const matches = [...data.matchAll(regex)].reverse();
+      matches.forEach((match) => {
+        const start = match.index;
+        const end = match.index + match[0].length;
+        view.dispatch({changes: { from: start,to: end,insert: value }})
+      });
     }
-  }, [editorRef.current]);
+  }
+
+  const handleSuggestionButtonClick = (button) => {
+    const view = editorRef.current?.view;
+    if (view) {
+      let start = button.start;
+      let end = button.end;
+      let apply = button.apply;
+      view.dispatch({changes: { from: start,to: end,insert: `${apply}` }})
+    }
+  }
 
   return (
     <div className="code_mirror">
+      <div className="actions">
+        <div className="buttons">
+          <button className="button-19" onClick={() => findAndReplace('your')}>Your-Their</button>
+          <button className="button-19" onClick={() => findAndReplace('yourself')}>YourSelf-ThemSelf</button>
+        </div>
+        <div className="suggestions">
+          {buttons?.map((button,index)=>{
+              return (<button key={index} className="button-85" onClick={() => handleSuggestionButtonClick(button)} >{index+1}-{button.label}</button>)
+            })
+          }
+        </div>
+
+      </div>
       <span>{yamlError}</span>
-      {/* <div ref={editorRef}/> */}
       <CodeMirror
         ref={editorRef}
         height= {readOnly ? '200px' : null}
@@ -417,7 +309,6 @@ export function YamlEditor({
         value={data}
         theme={ readOnly? githubDark : githubLight}
         extensions={extensions}
-        // selection={EditorSelection.cursor(50)}
         onKeyDown={hanleKeyPress}
         onKeyUp={handleKeyUp}
       />
