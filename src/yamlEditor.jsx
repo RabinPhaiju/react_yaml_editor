@@ -11,7 +11,8 @@ import {keymap,EditorView } from "@codemirror/view";
 import foldOnIndent from "./foldIndent";
 import {autocompletion} from "@codemirror/autocomplete";
 import plur from 'plur';
-import myCompletions from "./utils";
+import myCompletions from "./utils/myCompletions";
+import createSuggestionList from "./utils/suggestionList";
 // import isBracketsBalanced from "./checkBracketsBalanced";
 
 const yaml = StreamLanguage.define(yamlMode.yaml);
@@ -253,39 +254,6 @@ export function YamlEditor({
     }
   };
 
-  const createSuggestionList = (word,startInDoc,endInDoc) => {
-    let buttons = []
-    if(word == 'you' || word == 'You'){
-      buttons = [
-        { start:startInDoc,end: endInDoc,
-          label: 'them',apply:'{{them}}',
-        },
-        { start:startInDoc,end: endInDoc,
-          label: 'they',apply:'{{they}}',
-        }
-      ];
-    }else if(word == 'is' || word == 'are'){
-      buttons = [
-        { start:startInDoc,end: endInDoc,
-          label: 'is_are',apply:'{{is_are}}',
-        }
-      ];
-    }else if(word == 'Your' || word == 'your'){
-      buttons = [
-        { start:startInDoc,end:endInDoc,
-          label: "native's",apply:"{{native's}}",
-        },
-        { start:startInDoc,end:endInDoc,
-          label: "their",apply:"{{their}}",
-        }
-      ];
-
-    }else{
-        
-    }
-    return buttons;
-  }
-
   const createSuggestionButton = (word,startInDoc,endInDoc) => {
     const buttons = createSuggestionList(word,startInDoc,endInDoc);
     if(buttons.length > 0){
@@ -384,6 +352,10 @@ export function YamlEditor({
     }
   }
 
+  const handlePaste = (event) => {
+    // console.log(event.clipboardData.getData('Text'));
+  }
+
   return (
     <div className="code_mirror">
       <div className="actions">
@@ -408,6 +380,7 @@ export function YamlEditor({
         extensions={extensions}
         onKeyDown={hanleKeyPress}
         onKeyUp={handleKeyUp}
+        onPaste={handlePaste}
       />
     </div>
   );
