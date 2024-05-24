@@ -5,6 +5,7 @@ import react from '@vitejs/plugin-react'
     export default defineConfig({
     hmr: 'localhost',
   plugins: [react()],
+  build: { chunkSizeWarningLimit: 1600, },
   base: '/react_yaml_editor',
   resolve: {
     alias: {

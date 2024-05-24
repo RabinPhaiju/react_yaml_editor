@@ -57,8 +57,12 @@ export function YamlEditor({
     const editor = editorRef.current?.editor;
 
     const handleAction = (event) => {
-      if(event.key == 'ArrowLeft' || event.key == 'ArrowRight'){
+      if(event.key == 'ArrowLeft' || event.key == 'ArrowRight') {
         checkArrowHorizontalContext();
+        return;
+      }else if(event?.pointerType == 'touch' || event?.pointerType == 'mouse'){
+        const isAltKeyPressed = event?.altKey ?? false;
+        checkMouseClickContext(isAltKeyPressed);
         return;
       }
       if(event.keyCode == 17 || event.keyCode == 16  )return;
@@ -244,37 +248,56 @@ export function YamlEditor({
 
         const startInDoc = line.from + start;
         const endInDoc = line.from + end;
-        createSuggestionButton(word,startInDoc,endInDoc,line);
+        createSuggestionButton(word,startInDoc,endInDoc);
       }
     }
   };
 
-  const createSuggestionButton = (word,startInDoc,endInDoc,line) => {
+  const createSuggestionList = (word,startInDoc,endInDoc) => {
+    let buttons = []
     if(word == 'you' || word == 'You'){
-      let buttons = [
-        { start:startInDoc,
-          end:endInDoc === -1 ? line.to : endInDoc,
-          label: 'them',
-          apply:'{{them}}',
+      buttons = [
+        { start:startInDoc,end: endInDoc,
+          label: 'them',apply:'{{them}}',
         },
-        { start:startInDoc,
-          end:endInDoc === -1 ? line.to : endInDoc,
-          label: 'they',
-          apply:'{{they}}',
+        { start:startInDoc,end: endInDoc,
+          label: 'they',apply:'{{they}}',
         }
       ];
-      setButtons(buttons);
     }else if(word == 'is' || word == 'are'){
-      let buttons = [
-        { start:startInDoc,
-          end:endInDoc === -1 ? line.to : endInDoc,
-          label: 'is_are',
-          apply:'{{is_are}}',
+      buttons = [
+        { start:startInDoc,end: endInDoc,
+          label: 'is_are',apply:'{{is_are}}',
         }
       ];
+    }else if(word == 'Your' || word == 'your'){
+      buttons = [
+        { start:startInDoc,end:endInDoc,
+          label: "native's",apply:"{{native's}}",
+        },
+        { start:startInDoc,end:endInDoc,
+          label: "their",apply:"{{their}}",
+        }
+      ];
+
+    }else{
+        
+    }
+    return buttons;
+  }
+
+  const createSuggestionButton = (word,startInDoc,endInDoc) => {
+    const buttons = createSuggestionList(word,startInDoc,endInDoc);
+    if(buttons.length > 0){
       setButtons(buttons);
     }else{
         setButtons([]);
+    }
+  }
+  const applySuggestionsWithAlt = (word,startInDoc,endInDoc,view) => {
+    const buttons = createSuggestionList(word,startInDoc,endInDoc);
+    if(buttons.length > 0){
+      makeAltActon(1,buttons)(view);
     }
   }
 
@@ -297,7 +320,35 @@ export function YamlEditor({
       const endInDoc = line.from + end;
       word = lineText.slice(start, end);
 
-      createSuggestionButton(word,startInDoc,endInDoc,line);
+      createSuggestionButton(word,startInDoc,endInDoc);
+      return true;
+    }
+  };
+
+  const checkMouseClickContext = (withAlt) => {
+    const view = editorRef.current?.view;
+    if (view) {
+      const {state} = view;
+      let [start,end,word,line,lineText] = getWordWithPos(state);
+  
+      if(/\W$/.test(word)){  // if any non charater is at the end
+        end = end-1
+       }else if(/^\W/.test(word)){ // if any non charater is at the start
+        start = start+1
+      }else if(/\w\W+\w/.test(word)){ // if any non charater is in between
+        return false;
+      }
+  
+      // Get word pos in doc
+      const startInDoc = line.from + start;
+      const endInDoc = line.from + end;
+      word = lineText.slice(start, end);
+
+      if(withAlt){
+        applySuggestionsWithAlt(word,startInDoc,endInDoc,view);
+      }else{
+        createSuggestionButton(word,startInDoc,endInDoc);
+      }
       return true;
     }
   };
