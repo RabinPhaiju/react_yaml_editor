@@ -13,6 +13,7 @@ import {autocompletion} from "@codemirror/autocomplete";
 import plur from 'plur';
 import myCompletions from "./utils/myCompletions";
 import createSuggestionList from "./utils/suggestionList";
+import {planets,createPlanetsRegex,getTimeLineRegex} from "./utils/utils";
 // import isBracketsBalanced from "./checkBracketsBalanced";
 
 const yaml = StreamLanguage.define(yamlMode.yaml);
@@ -342,6 +343,28 @@ export function YamlEditor({
     }
   }
 
+  const findRegex = (target) => {
+    const view = editorRef.current?.view;
+    let regex = '';
+    if(target == 'timeline'){
+      regex = getTimeLineRegex
+    }else if(target == 'planet'){
+      regex = createPlanetsRegex(planets);
+    }else { return; }
+    setButtons([]);
+
+    if(view){
+      const matches = [...data.matchAll(regex)];
+      const firstMatch = matches[0];
+      if(firstMatch){
+        const start = firstMatch.index;
+        const end = firstMatch.index + firstMatch[0].length;
+        view.dispatch({selection: {anchor: start}, userEvent: "select",scrollIntoView: true})
+        createSuggestionButton(target,start,end);
+      }
+    }
+  }
+
   const handleSuggestionButtonClick = (button) => {
     const view = editorRef.current?.view;
     if (view) {
@@ -362,6 +385,8 @@ export function YamlEditor({
         <div className="buttons">
           <button className="button-19" onClick={() => findAndReplace('your')}>Your-Their</button>
           <button className="button-19" onClick={() => findAndReplace('yourself')}>YourSelf-ThemSelf</button>
+          <button className="button-19" onClick={() => findRegex('timeline')}>TimeLine</button>
+          <button className="button-19" onClick={() => findRegex('planet')}>Planet</button>
           {
             buttons?.map((button,index)=>{
               return (<button key={index} className="button-85" onClick={() => handleSuggestionButtonClick(button)} >{index+1}-{button.label}</button>)

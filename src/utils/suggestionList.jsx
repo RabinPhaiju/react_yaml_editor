@@ -58,8 +58,20 @@ const createSuggestionList = (word,startInDoc,endInDoc) => {
           label: 'wife_husband',apply:'{{#conditional}} {{is_gender_male}}  : wife | husband {{/conditional}}',
         }
       ]
-    }else{
-        
+    }else if(word == 'timeline'){
+      buttons = [
+        {
+          start:startInDoc,end:endInDoc,
+          label: 'perid_in_words',apply:'{{timeline.period_in_words}}',
+        }
+      ]
+    }else if(word == 'planet'){
+      buttons = [
+        {
+          start:startInDoc,end:endInDoc,
+          label: 'top_activated_planets',apply:'{{#conjunction}} {{activation_strength.top_activated_planets}} {{/conjunction}}',
+        }
+      ]
     }
     return buttons;
   }
