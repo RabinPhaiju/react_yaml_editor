@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
 import useLocalStorage from "./components/useLocalStorage";
 import "./App.css";
-import parser from "js-yaml";
 import { YamlEditor } from "./yamlEditor";
-import yaml from 'yaml';
 import getKeys from "./getKeys";
+import debounce from "./utils/debounce"
 import {template1, template2,template3} from "./assets/template";
 import {contextSuggestion, partialContextSuggestion, defaultSuggestions, externalLink} from "./assets/context";
 
@@ -15,19 +14,12 @@ const [linkSuggestions, setLinkSuggestions] = useState([]);
 const [anchorSuggestions,setAnchorSuggestions] = useState();
 const [publicData, setPublicData] = useLocalStorage("public", template1)
 const [privateData, setPrivateData] = useLocalStorage("private", template2)
-const [data, setData] = useState(template3);
+const [data, setData] = useLocalStorage("data",template3);
 const [currentTab,setCurrentTab] = useLocalStorage("tab", "public");
+const [toogleWordCount,setToogleWordCount] = useLocalStorage("word-count", false);
 const [wordCount,setWordCount] = useState({
-  "you":0,
-  "he":0,
-  "his":0,
-  "him":0,
-  "friend":0,
-  "husband":0,
-  "wife":0,
-  
+  "you":0,"he":0,"his":0,"him":0,"friend":0,"husband":0,"wife":0,
 })
-
 const  updateSuggestions =((context,partial_context,externalLink) => {
   let context_suggestions = [context].flatMap(obj => getKeys(obj,'text','context'));
   let _link_suggestion = [externalLink].flatMap(obj => getKeys(obj,'text','link'));
@@ -41,6 +33,10 @@ const  updateSuggestions =((context,partial_context,externalLink) => {
   setPartialSuggestions(prev => [...prev,...partial_suggestions]);
   setLinkSuggestions(prev => [...prev,..._link_suggestion]);
 })
+
+const handleToogleWordCount = () =>{
+  setToogleWordCount(!toogleWordCount);
+}
 
 useEffect(()=>{
   updateSuggestions(contextSuggestion,partialContextSuggestion,externalLink);
@@ -61,15 +57,28 @@ useEffect(()=>{
 
 const changeYamlData = (value,cTab) => {
   if(cTab === "public"){
-    setPublicData(prev=>( value ));
+    setPublicData(value );
   }else if(cTab === "private"){
-    setPrivateData(prev=>( value ));
+    setPrivateData(value );
   }else{
-    setData(prev=>( value ));
+    setData(value );
   }
   // update word count
-
+  const wordCountDebounce = debounce(updateWordCount, 568);
+  wordCountDebounce(value);
 }
+
+const updateWordCount = (value) => {
+  const words = value.split(/[-:_' ]/);
+  let _wordCount = {...wordCount};
+  words.forEach((word)=>{
+    if(Object.keys(_wordCount).includes(word)){
+      _wordCount[word] += 1;
+    }
+  })  
+  setWordCount(_wordCount);
+}
+
 const saveYaml = (e) => {}
 
 const handleCurrentTabChange = (tab)=>{
@@ -78,40 +87,49 @@ const handleCurrentTabChange = (tab)=>{
 
   return (
     <div className="App">
-        <div style={{width:'100%'}}>
         <div className="nav">
-          <button style={currentTab === "public" ? {backgroundColor:'teal'}:{}} className="button-85" onClick={() => handleCurrentTabChange('public')}>Public</button>
-          <button style={currentTab === "private" ? {backgroundColor:'teal'}:{}} className="button-85" onClick={() => handleCurrentTabChange("private")}>Private</button>
-          <button style={currentTab === "data" ? {backgroundColor:'teal'}:{}} className="button-85" onClick={() => handleCurrentTabChange("data")}>Other</button>
+            <div className="actions">
+              <div>
+                <button style={currentTab === "public" ? {backgroundColor:'teal'}:{}} className="button-85" onClick={() => handleCurrentTabChange('public')}>Public</button>
+                <button style={currentTab === "private" ? {backgroundColor:'teal'}:{}} className="button-85" onClick={() => handleCurrentTabChange("private")}>Private</button>
+                <button style={currentTab === "data" ? {backgroundColor:'teal'}:{}} className="button-85" onClick={() => handleCurrentTabChange("data")}>Other</button>
+              </div>
+              <button className="button-19" onClick={handleToogleWordCount}>Word Count</button>
+            </div>
         </div>
 
-        <YamlEditor 
-          data={
-            currentTab === "public" 
-              ? publicData ?? ''
-              : currentTab === "private" 
-                ? privateData ?? ''
-                : data.length > 0 
-                  ? data 
-                  : ''
-          } 
-          currentTab={currentTab}
-          onChange={changeYamlData} 
-          saveYaml={saveYaml} 
-          contextSuggestions={contextSuggestions}
-          partialSuggestions={partialSuggestions}
-          anchorSuggestions = {anchorSuggestions}
-          linkSuggestions={linkSuggestions}
-          />
-        </div>
-        {/* <div style={{width:'10%'}}>
-            <p>Word Count</p>
+        <div className="content">
+          <YamlEditor 
+            data={
+              currentTab === "public" 
+                ? publicData ?? ''
+                : currentTab === "private" 
+                  ? privateData ?? ''
+                  : data.length > 0 
+                    ? data 
+                    : ''
+            } 
+            currentTab={currentTab}
+            onChange={changeYamlData} 
+            saveYaml={saveYaml} 
+            contextSuggestions={contextSuggestions}
+            partialSuggestions={partialSuggestions}
+            anchorSuggestions = {anchorSuggestions}
+            linkSuggestions={linkSuggestions}
+            />
             {
-              wordCount && Object.keys(wordCount).map((key)=>{
-                return <p>{key} : {wordCount[key]}</p>
-              })
+              toogleWordCount && (
+                <div className="word-count">
+                <span>Word Count</span>
+                {
+                  wordCount && Object.keys(wordCount).map((key)=>{
+                    return <p key={key}>{wordCount[key]} : {key}</p>
+                  })
+                }
+            </div>
+              )
             }
-        </div> */}
+        </div>
     </div>
   );
 }
