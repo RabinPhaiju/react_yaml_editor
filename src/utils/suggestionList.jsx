@@ -1,4 +1,5 @@
-const createSuggestionList = (word,startInDoc,endInDoc) => {
+const createSuggestionList = (pWord,startInDoc,endInDoc) => {
+    const word = pWord.toLowerCase();
     let buttons = []
     if(word == 'you' || word == 'You'){
       buttons = [
@@ -7,6 +8,18 @@ const createSuggestionList = (word,startInDoc,endInDoc) => {
         },
         { start:startInDoc,end: endInDoc,
           label: 'they',apply:'{{they}}',
+        },
+        { start:startInDoc,end: endInDoc,
+          label: 'them-they',apply:'{{#conditional}} {{is_self}}  : {{them}} | they {{/conditional}}',
+        },
+        { start:startInDoc,end: endInDoc,
+          label: 'them-them',apply:'{{#conditional}} {{is_self}}  : {{them}} | them {{/conditional}}',
+        }
+      ];
+    }else if(word == 'he' || word == 'she'){
+      buttons = [
+        { start:startInDoc,end: endInDoc,
+          label: 'she_he',apply:'{{#conditional}} {{is_gender_male}}  : she | he {{/conditional}}',
         }
       ];
     }else if(word == 'is' || word == 'are'){
@@ -15,7 +28,7 @@ const createSuggestionList = (word,startInDoc,endInDoc) => {
           label: 'is_are',apply:'{{is_are}}',
         }
       ];
-    }else if(word == 'Your' || word == 'your'){
+    }else if(word == 'your'){
       buttons = [
         { start:startInDoc,end:endInDoc,
           label: "native's",apply:"{{native's}}",
@@ -51,6 +64,13 @@ const createSuggestionList = (word,startInDoc,endInDoc) => {
           }
         ]
       }
+    }else if(word == 'girlfriend' || word == 'boyfriend'){
+      buttons = [
+        {
+          start:startInDoc,end:endInDoc,
+          label: 'girl-boy',apply:'{{#conditional}} {{is_gender_male}}  : girlfriend | boyfriend {{/conditional}}',
+        }
+      ]
     }else if(word == 'wife' || word == 'husband'){
       buttons = [
         {
@@ -73,7 +93,7 @@ const createSuggestionList = (word,startInDoc,endInDoc) => {
         },
         {
           start:startInDoc,end:endInDoc,
-          label: 'activated_planets',apply:'{{#conjunction}} {{activation_strength.activated_planets}} {{/conjunction}}',
+          label: 'indicator_planets',apply:'{{#conjunction}} {{connection_algorithm.indicator_planets}} {{/conjunction}}',
         }
       ]
     }
