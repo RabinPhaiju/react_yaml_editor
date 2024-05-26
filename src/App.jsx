@@ -17,6 +17,16 @@ const [publicData, setPublicData] = useLocalStorage("public", template1)
 const [privateData, setPrivateData] = useLocalStorage("private", template2)
 const [data, setData] = useState(template3);
 const [currentTab,setCurrentTab] = useLocalStorage("tab", "public");
+const [wordCount,setWordCount] = useState({
+  "you":0,
+  "he":0,
+  "his":0,
+  "him":0,
+  "friend":0,
+  "husband":0,
+  "wife":0,
+  
+})
 
 const  updateSuggestions =((context,partial_context,externalLink) => {
   let context_suggestions = [context].flatMap(obj => getKeys(obj,'text','context'));
@@ -47,7 +57,7 @@ useEffect(()=>{
     })
     setAnchorSuggestions(_anchorSuggestions);
   }
-},[data])
+},[data]) // TODO: fix this
 
 const changeYamlData = (value,cTab) => {
   if(cTab === "public"){
@@ -57,6 +67,8 @@ const changeYamlData = (value,cTab) => {
   }else{
     setData(prev=>( value ));
   }
+  // update word count
+
 }
 const saveYaml = (e) => {}
 
@@ -66,7 +78,7 @@ const handleCurrentTabChange = (tab)=>{
 
   return (
     <div className="App">
-        <div>
+        <div style={{width:'100%'}}>
         <div className="nav">
           <button style={currentTab === "public" ? {backgroundColor:'teal'}:{}} className="button-85" onClick={() => handleCurrentTabChange('public')}>Public</button>
           <button style={currentTab === "private" ? {backgroundColor:'teal'}:{}} className="button-85" onClick={() => handleCurrentTabChange("private")}>Private</button>
@@ -92,6 +104,14 @@ const handleCurrentTabChange = (tab)=>{
           linkSuggestions={linkSuggestions}
           />
         </div>
+        {/* <div style={{width:'10%'}}>
+            <p>Word Count</p>
+            {
+              wordCount && Object.keys(wordCount).map((key)=>{
+                return <p>{key} : {wordCount[key]}</p>
+              })
+            }
+        </div> */}
     </div>
   );
 }

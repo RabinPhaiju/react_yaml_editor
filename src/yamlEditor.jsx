@@ -162,16 +162,15 @@ export function YamlEditor({
     return [start,end];
   }
 
-
   function makePlural(view) {
     const {state} = view;
     let [start,end,word,line,lineText] = getWordWithPos(state);
 
-    if(/\W$/.test(word)){  // if any non charater is at the end
+    if(/\W$/.test(word)){
       end = end-1
-     }else if(/^\W/.test(word)){ // if any non charater is at the start
+     }else if(/^\W/.test(word)){
       start = start+1
-    }else if(/\w\W+\w/.test(word)){ // if any non charater is in between
+    }else if(/\w\W+\w/.test(word)){
       return false;
     }
 
@@ -183,6 +182,23 @@ export function YamlEditor({
 
     // replace the word
     const replaceWord = `{{#conditional }} {{is_self}} : ${word} | ${handlePlur(word)} {{/conditional }}`;
+    view.dispatch({changes: { from: startInDoc,to: endInDoc,insert: replaceWord }})
+    view.dispatch({selection: {anchor: startInDoc+replaceWord.length}, userEvent: "select",scrollIntoView: true})
+    return true;
+  }
+
+  function inputHasSuggestion(view) {
+    const {state} = view;
+    let [start,end,word,line,lineText] = getWordWithPos(state);
+
+    // Get word pos in doc
+    const startInDoc = line.from + start;
+    const endInDoc = line.from + end;
+    word = lineText.slice(start, end);
+    if(word.length == 0){ return false; }
+
+    // replace the word
+    const replaceWord = `{{#has_suggestion }}`;
     view.dispatch({changes: { from: startInDoc,to: endInDoc,insert: replaceWord }})
     view.dispatch({selection: {anchor: startInDoc+replaceWord.length}, userEvent: "select",scrollIntoView: true})
     return true;
@@ -218,6 +234,7 @@ export function YamlEditor({
     keymap.of([
       { key: 'Ctrl-m', run: moveToLine },
       { key: 'Ctrl-Shift-q', run: makePlural },
+      { key: 'Ctrl-Shift-h', run: inputHasSuggestion },
       { key: 'Ctrl-Shift-c', run: makeAltActon(1,buttons) },
       { key: 'Ctrl-Shift-1', run: makeAltActon(1,buttons) },
       { key: 'Ctrl-Shift-2', run: makeAltActon(2,buttons) },

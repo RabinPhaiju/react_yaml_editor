@@ -1,13 +1,16 @@
 const createSuggestionList = (pWord,startInDoc,endInDoc) => {
     const word = pWord.toLowerCase();
     let buttons = []
-    if(word == 'you' || word == 'You'){
+    if(word == 'you'){
       buttons = [
         { start:startInDoc,end: endInDoc,
           label: 'them',apply:'{{them}}',
         },
         { start:startInDoc,end: endInDoc,
           label: 'they',apply:'{{they}}',
+        },
+        { start:startInDoc,end: endInDoc,
+          label: 'native',apply:'{{native}}',
         },
         { start:startInDoc,end: endInDoc,
           label: 'them-they',apply:'{{#conditional}} {{is_self}}  : {{them}} | they {{/conditional}}',

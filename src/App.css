@@ -6,6 +6,11 @@
   border: 1px solid #d4d4d4;
   border-radius: 6px;
 }
+
+.App{
+  display: flex;
+}
+
 .nav{
     position: sticky;
     top: 0;
