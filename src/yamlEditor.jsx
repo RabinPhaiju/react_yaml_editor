@@ -4,7 +4,6 @@ import CodeMirror from "@uiw/react-codemirror";
 import * as yamlMode from "@codemirror/legacy-modes/mode/yaml";
 import { StreamLanguage} from "@codemirror/language";
 import parser from "js-yaml";
-import { githubLight,githubDark } from "@uiw/codemirror-theme-github";
 import "./codeMirror.css";
 import {EditorState} from "@codemirror/state"
 import {keymap,EditorView,Decoration,ViewPlugin} from "@codemirror/view";
@@ -255,7 +254,6 @@ export function YamlEditor({
 
   const highlightCommand = (view,from,to) => {
     const plugin = view.plugin(addMarks);
-    console.log('addHighlight',view.plugin(addMarks));
     if (plugin) {
       plugin.addHighlight(from, to);
     }
@@ -287,6 +285,7 @@ export function YamlEditor({
     // EditorState.allowMultipleSelections.of(true),
     // keymap.of(defaultKeymap),
     addMarks,
+    foldOnIndent(),
     keymap.of(myKeymaps),
     autocompletion({ override: [
       (context) => myCompletions(context,contextSuggestions,anchorSuggestions,linkSuggestions,partialSuggestions)
@@ -457,10 +456,8 @@ export function YamlEditor({
       <span>{yamlError}</span>
       <CodeMirror
         ref={editorRef}
-        // height= {readOnly ? '200px' : null}
         onChange={_onChange}
         value={data}
-        // theme={ readOnly? githubDark : githubLight}
         extensions={extensions}
         onKeyDown={hanleKeyPress}
         onKeyUp={handleKeyUp}
