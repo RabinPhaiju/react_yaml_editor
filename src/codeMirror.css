@@ -14,3 +14,7 @@
 .code_mirror > .actions > .suggestions{
     padding: 2px;
 }
+
+.my-mark{
+    background-color: rgb(242, 255, 175);
+}
