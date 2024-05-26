@@ -17,7 +17,6 @@
     "@codemirror/legacy-modes": "6.3.1",
     "@codemirror/lint": "6.2.0",
     "@codemirror/stream-parser": "0.19.9",
-    "@uiw/codemirror-theme-github": "4.19.9",
     "@uiw/react-codemirror": "4.19.9",
     "js-yaml": "4.1.0",
     "loader-utils": "3.2.1",
