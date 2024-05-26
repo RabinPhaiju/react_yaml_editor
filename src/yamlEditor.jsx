@@ -12,7 +12,7 @@ import {autocompletion} from "@codemirror/autocomplete";
 import plur from 'plur';
 import myCompletions from "./utils/myCompletions";
 import createSuggestionList from "./utils/suggestionList";
-import {planets,createPlanetsRegex,getTimeLineRegex} from "./utils/utils";
+import {planets,createPlanetsRegex,getTimeLineRegex, certainMonths} from "./utils/utils";
 // import isBracketsBalanced from "./checkBracketsBalanced";
 
 const yaml = StreamLanguage.define(yamlMode.yaml);
@@ -410,7 +410,10 @@ export function YamlEditor({
     refButtons.current = [];
 
     if(view){
-      const matches = [...data.matchAll(regex)];
+      let matches = [...data.matchAll(regex)];
+      if(matches.length == 0 && target == 'timeline'){
+          matches = [...data.matchAll(certainMonths)];
+       }
       const firstMatch = matches[0];
       if(firstMatch){
         const start = firstMatch.index;
