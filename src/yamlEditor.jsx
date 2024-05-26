@@ -5,8 +5,9 @@ import * as yamlMode from "@codemirror/legacy-modes/mode/yaml";
 import { StreamLanguage} from "@codemirror/language";
 import parser from "js-yaml";
 import "./codeMirror.css";
-import {EditorState} from "@codemirror/state"
-import {keymap,EditorView,Decoration,ViewPlugin} from "@codemirror/view";
+// import {EditorState} from "@codemirror/state"
+import {keymap,EditorView} from "@codemirror/view";
+import { wrappedLineIndent } from 'codemirror-wrapped-line-indent';
 import foldOnIndent from "./foldIndent";
 import {autocompletion} from "@codemirror/autocomplete";
 import plur from 'plur';
@@ -52,7 +53,6 @@ export function YamlEditor({
   const [yamlError,setYamlError] = useState(null);
   const editorRef = useRef(null);
   const [buttons,setButtons] = useState([]);
-  const refButtons = useRef([]);
 
   useEffect(() => {
     const editor = editorRef.current?.editor;
@@ -69,7 +69,6 @@ export function YamlEditor({
       if(event.keyCode == 17 || event.keyCode == 16  )return;
       if(buttons.length > 0){
         setButtons([]);
-        refButtons.current = [];
       }
     };
 
@@ -85,7 +84,6 @@ export function YamlEditor({
 
   const _onChange = useCallback((value, viewUpdate) => {
       setButtons([]);
-      refButtons.current = []
 
       try{
         parser.loadAll(value);
@@ -186,7 +184,6 @@ export function YamlEditor({
     const replaceWord = `{{#conditional }} {{is_self}} : ${word} | ${handlePlur(word)} {{/conditional }}`;
     view.dispatch({changes: { from: startInDoc,to: endInDoc,insert: replaceWord }})
     view.dispatch({selection: {anchor: startInDoc+replaceWord.length}, userEvent: "select",scrollIntoView: true});
-    highlightCommand(view,startInDoc,startInDoc+replaceWord.length)
     return true;
   }
 
@@ -216,75 +213,42 @@ export function YamlEditor({
   }
 
   const makeAltActon = (index,buttons) => (view) => {
-    let currentButtons = buttons ?? refButtons.current;
-    if(index > currentButtons.length){ return false; }
-    const button = currentButtons[index-1];
+    console.log(buttons)
+    if(index > buttons.length){ return false; }
+    const button = buttons[index-1];
     let start = button.start;
     let end = button.end;
     let apply = button.apply;
 
     view.dispatch({changes: { from: start,to: end,insert: `${apply}` }})
     view.dispatch({selection: {anchor: start+apply.length}, userEvent: "select",scrollIntoView: true})
-    highlightCommand(view,start,start+apply.length);
   }
-
-  const markDecoration = Decoration.mark({ class: 'my-mark' });
-  const addMarks = ViewPlugin.fromClass(class {
-    constructor(view) { this.decorations = Decoration.none;}
-
-    update(update) {
-      if (update.docChanged || update.viewportChanged) {
-        this.decorations = this.buildDecorations(update.view);
-      }
-    }
-
-    buildDecorations(view) {
-      let decorations = [];
-      return Decoration.set(decorations);
-    }
-
-    addHighlight(from, to) {
-      this.decorations = this.decorations.update({
-        add: [markDecoration.range(from, to)]
-      });
-    }
-  }, {
-    decorations: v => v.decorations
-  });
-
-  const highlightCommand = (view,from,to) => {
-    const plugin = view.plugin(addMarks);
-    if (plugin) {
-      plugin.addHighlight(from, to);
-    }
-    return true;
-  };
 
   const myKeymaps = [
     { key: 'Ctrl-m', run: moveToLine },    
     { key: 'Ctrl-Shift-q', run: makePlural },
     { key: 'Ctrl-Shift-h', run: inputHasSuggestion },
-    { key: 'Ctrl-Shift-c', run: makeAltActon(1) },
-    { key: 'Ctrl-Shift-1', run: makeAltActon(1) },
-    { key: 'Ctrl-Shift-2', run: makeAltActon(2) },
-    { key: 'Ctrl-Shift-3', run: makeAltActon(3) },
-    { key: 'Ctrl-Shift-4', run: makeAltActon(4) },
-    { key: 'Ctrl-Shift-5', run: makeAltActon(5) },
-    { key: 'Ctrl-Shift-6', run: makeAltActon(6) },
-    { key: 'Ctrl-Shift-7', run: makeAltActon(7) },
-    { key: 'Ctrl-Shift-8', run: makeAltActon(8) },
-    { key: 'Ctrl-Shift-9', run: makeAltActon(9) },
+    { key: 'Ctrl-Shift-c', run: makeAltActon(1,buttons) },
+    { key: 'Ctrl-Shift-1', run: makeAltActon(1,buttons) },
+    { key: 'Ctrl-Shift-2', run: makeAltActon(2,buttons) },
+    { key: 'Ctrl-Shift-3', run: makeAltActon(3,buttons) },
+    { key: 'Ctrl-Shift-4', run: makeAltActon(4,buttons) },
+    { key: 'Ctrl-Shift-5', run: makeAltActon(5,buttons) },
+    { key: 'Ctrl-Shift-6', run: makeAltActon(6,buttons) },
+    { key: 'Ctrl-Shift-7', run: makeAltActon(7,buttons) },
+    { key: 'Ctrl-Shift-8', run: makeAltActon(8,buttons) },
+    { key: 'Ctrl-Shift-9', run: makeAltActon(9,buttons) },
   ];
 
-  const [extensions] = useState([
+  const extensions = [
     yaml,
     lintGutter(),
     yamlLinter,
     // EditorState.readOnly.of(readOnly),
     EditorView.lineWrapping,
+    wrappedLineIndent,
     // EditorState.allowMultipleSelections.of(true),
     // keymap.of(defaultKeymap),
-    addMarks,
     foldOnIndent(),
     keymap.of(myKeymaps),
     autocompletion({ override: [
@@ -293,12 +257,12 @@ export function YamlEditor({
       //   ['.apple','.ball','{suggestions']
       //   )
     ],}),
-  ])
+  ];
 
   const hanleKeyPress = (event) => {
     if ((event.ctrlKey) && (event.key === 's' || event.key === 'S')) {
       event.preventDefault();
-      saveYaml(event);  
+      saveYaml(data);  
     }
   };
 
@@ -310,10 +274,8 @@ export function YamlEditor({
     const buttons = createSuggestionList(word,startInDoc,endInDoc);
     if(buttons.length > 0){
       setButtons(buttons);
-      refButtons.current = buttons
     }else{
         setButtons([]);
-        refButtons.current = [];
     }
   }
   const applySuggestionsWithAlt = (word,startInDoc,endInDoc,view) => {
@@ -334,7 +296,6 @@ export function YamlEditor({
         end = start_end[1];
       }else {
         setButtons([]);
-        refButtons.current = [];
         return false;
       }
       // Get word pos in doc
@@ -357,7 +318,6 @@ export function YamlEditor({
         end = start_end[1];
       }else {
         setButtons([]);
-        refButtons.current = [];
         return false;
       }
       // Get word pos in doc
@@ -407,7 +367,6 @@ export function YamlEditor({
       regex = createPlanetsRegex(planets);
     }else { return; }
     setButtons([]);
-    refButtons.current = [];
 
     if(view){
       let matches = [...data.matchAll(regex)];
@@ -431,7 +390,6 @@ export function YamlEditor({
       let end = button.end;
       let apply = button.apply;
       view.dispatch({changes: { from: start,to: end,insert: `${apply}` }});
-      highlightCommand(view,start,start+apply.length)
     }
   }
 

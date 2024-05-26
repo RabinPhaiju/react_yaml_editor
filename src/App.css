@@ -36,13 +36,12 @@
   min-width: 100px;
 }
 
-.word-count > span{
-  font-family:'Gill Sans';
-  font-size: 14px;
-  display: block;
-  margin: 2px 0;
-  background-color: #d4d4d499;
-  padding: 4px;
+.toogle-word-count{
+  cursor: pointer;
+  background-color: #5c333377;
+  color: #f3e9e9;
+  border-color: transparent;
+  border-radius: 4px;
 }
 
 .word-count > p{

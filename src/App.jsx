@@ -3,7 +3,7 @@ import useLocalStorage from "./components/useLocalStorage";
 import "./App.css";
 import { YamlEditor } from "./yamlEditor";
 import getKeys from "./getKeys";
-import debounce from "./utils/debounce"
+// import debounce from "./utils/debounce"
 import {template1, template2,template3} from "./assets/template";
 import {contextSuggestion, partialContextSuggestion, defaultSuggestions, externalLink} from "./assets/context";
 
@@ -17,9 +17,8 @@ const [privateData, setPrivateData] = useLocalStorage("private", template2)
 const [data, setData] = useLocalStorage("data",template3);
 const [currentTab,setCurrentTab] = useLocalStorage("tab", "public");
 const [toogleWordCount,setToogleWordCount] = useLocalStorage("word-count", false);
-const [wordCount,setWordCount] = useState({
-  "you":0,"he":0,"his":0,"him":0,"friend":0,"husband":0,"wife":0,
-})
+const defaultWordCount = {"you":0,"he":0,"his":0,"him":0,"friend":0,"husband":0,"wife":0,"is":0}
+const [wordCount,setWordCount] = useState(defaultWordCount)
 const  updateSuggestions =((context,partial_context,externalLink) => {
   let context_suggestions = [context].flatMap(obj => getKeys(obj,'text','context'));
   let _link_suggestion = [externalLink].flatMap(obj => getKeys(obj,'text','link'));
@@ -43,9 +42,18 @@ useEffect(()=>{
 },[])
 
 useEffect(()=>{
+  setWordCount(defaultWordCount);
+},[currentTab])
+
+useEffect(()=>{
   const regex = new RegExp(/&\w+?\w+/,'g');
-  let newData = data?.match(regex);
-  if(newData !=null){
+  const currentData = currentTab == "public" 
+    ? publicData 
+    : currentTab == "private" 
+      ? privateData 
+      : data;
+  let newData = currentData?.match(regex);
+  if(newData !=null && newData.length > 0){
     const _anchorSuggestions = [];
     newData.forEach(anchor=>{
        anchor = anchor.substring(1);
@@ -53,7 +61,7 @@ useEffect(()=>{
     })
     setAnchorSuggestions(_anchorSuggestions);
   }
-},[data]) // TODO: fix this
+},[data,publicData,privateData])
 
 const changeYamlData = (value,cTab) => {
   if(cTab === "public"){
@@ -63,14 +71,14 @@ const changeYamlData = (value,cTab) => {
   }else{
     setData(value );
   }
-  // update word count
-  const wordCountDebounce = debounce(updateWordCount, 568);
-  wordCountDebounce(value);
+      // update word count
+      // const wordCountDebounce = debounce(updateWordCount, 568);
+      // wordCountDebounce(value);
 }
 
 const updateWordCount = (value) => {
-  const words = value.split(/[-:_' ]/);
-  let _wordCount = {...wordCount};
+  const words = value.split(/([-:_' ]| is |\bshe \| he\b|\bher \| his\b|\her \| him\b|s*friend|\bgirlfriend \| boyfriend\b|\bwife \| husband\b)/);
+  let _wordCount = {...defaultWordCount};
   words.forEach((word)=>{
     if(Object.keys(_wordCount).includes(word)){
       _wordCount[word] += 1;
@@ -79,7 +87,9 @@ const updateWordCount = (value) => {
   setWordCount(_wordCount);
 }
 
-const saveYaml = (e) => {}
+const saveYaml = (value) => {
+    updateWordCount(value);
+}
 
 const handleCurrentTabChange = (tab)=>{
   setCurrentTab(tab);
@@ -94,7 +104,7 @@ const handleCurrentTabChange = (tab)=>{
                 <button style={currentTab === "private" ? {backgroundColor:'teal'}:{}} className="button-85" onClick={() => handleCurrentTabChange("private")}>Private</button>
                 <button style={currentTab === "data" ? {backgroundColor:'teal'}:{}} className="button-85" onClick={() => handleCurrentTabChange("data")}>Other</button>
               </div>
-              <button className="button-19" onClick={handleToogleWordCount}>Word Count</button>
+              <button className="toogle-word-count" onClick={handleToogleWordCount}>Word Count</button>
             </div>
         </div>
 
@@ -111,7 +121,7 @@ const handleCurrentTabChange = (tab)=>{
             } 
             currentTab={currentTab}
             onChange={changeYamlData} 
-            saveYaml={saveYaml} 
+            saveYaml={saveYaml}
             contextSuggestions={contextSuggestions}
             partialSuggestions={partialSuggestions}
             anchorSuggestions = {anchorSuggestions}
@@ -120,7 +130,7 @@ const handleCurrentTabChange = (tab)=>{
             {
               toogleWordCount && (
                 <div className="word-count">
-                <span>Word Count</span>
+                <button className="button-19" onClick={() => updateWordCount(data)}>Check Count</button>
                 {
                   wordCount && Object.keys(wordCount).map((key)=>{
                     return <p key={key}>{wordCount[key]} : {key}</p>
