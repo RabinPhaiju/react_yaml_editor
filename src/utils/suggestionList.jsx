@@ -62,7 +62,7 @@ const createSuggestionList = (word,startInDoc,endInDoc) => {
       buttons = [
         {
           start:startInDoc,end:endInDoc,
-          label: 'perid_in_words',apply:'{{timeline.period_in_words}}',
+          label: 'period_in_words',apply:'{{timeline.period_in_words}}',
         }
       ]
     }else if(word == 'planet'){
@@ -70,6 +70,10 @@ const createSuggestionList = (word,startInDoc,endInDoc) => {
         {
           start:startInDoc,end:endInDoc,
           label: 'top_activated_planets',apply:'{{#conjunction}} {{activation_strength.top_activated_planets}} {{/conjunction}}',
+        },
+        {
+          start:startInDoc,end:endInDoc,
+          label: 'activated_planets',apply:'{{#conjunction}} {{activation_strength.activated_planets}} {{/conjunction}}',
         }
       ]
     }

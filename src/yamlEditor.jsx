@@ -83,7 +83,7 @@ export function YamlEditor({
         editor.removeEventListener('keydown', handleAction);
       };
     }
-  }, [editorRef.current],buttons);
+  }, [editorRef.current,buttons]);
 
   const _onChange = useCallback((value, viewUpdate) => {
       setButtons([]);
@@ -154,8 +154,9 @@ export function YamlEditor({
     if(word.length < 2){ return false; }
 
     // replace the word
-    view.dispatch({changes: { from: startInDoc,to: endInDoc,insert: `{{#conditional }} {{is_self}} : ${word} | ${handlePlur(word)} {{/conditional }}` }})
-
+    const replaceWord = `{{#conditional }} {{is_self}} : ${word} | ${handlePlur(word)} {{/conditional }}`;
+    view.dispatch({changes: { from: startInDoc,to: endInDoc,insert: replaceWord }})
+    view.dispatch({selection: {anchor: startInDoc+replaceWord.length}, userEvent: "select",scrollIntoView: true})
     return true;
   }
 
