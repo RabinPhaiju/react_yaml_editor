@@ -16,6 +16,24 @@ const createSuggestionList = (pWord,startInDoc,endInDoc) => {
           label: 'them-them',apply:'{{#conditional}} {{is_self}}  : {{them}} | them {{/conditional}}',
         }
       ];
+    }else if(word == "you're"){
+      buttons = [
+        { start:startInDoc,end: endInDoc,
+          label: "you're",apply:'{{they}} {{is_are}}',
+        },
+        { start:startInDoc,end: endInDoc,
+          label: "native're",apply:'{{native}} {{is_are}}',
+        }
+      ]
+    }else if(word == "you've"){
+      buttons = [
+        { start:startInDoc,end: endInDoc,
+          label: "you've",apply:'{{they}} {{has_have}}',
+        },
+        { start:startInDoc,end: endInDoc,
+          label: "native've",apply:'{{native}} {{has_have}}',
+        }
+      ]
     }else if(word == 'he' || word == 'she'){
       buttons = [
         { start:startInDoc,end: endInDoc,

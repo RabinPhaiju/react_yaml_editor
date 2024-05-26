@@ -49,7 +49,6 @@ export function YamlEditor({
   partialSuggestions,
   linkSuggestions,
   anchorSuggestions=[],
-  readOnly=false
 }) {
   const [yamlError,setYamlError] = useState(null);
   const editorRef = useRef(null);
@@ -74,11 +73,9 @@ export function YamlEditor({
     };
 
     if (editor) {
-      editor.addEventListener('dblclick', handleDoubleClick);
       editor.addEventListener('click', handleAction);
       editor.addEventListener('keydown', handleAction);
       return () => {
-        editor.removeEventListener('dblclick', handleDoubleClick);
         editor.removeEventListener('click', handleAction);
         editor.removeEventListener('keydown', handleAction);
       };
@@ -135,6 +132,37 @@ export function YamlEditor({
     return [start,end,word,line,lineText]
   }
 
+  const handleSymbolInWord = (word,start,end) => {
+    if(/\W$/.test(word)){  // if any non charater is at the end
+      end = end-1
+    }else if(/^\W/.test(word)){ // if any non charater is at the start
+      start = start+1
+    }else if(word == "you're" || word == "you've"){ // custom rules
+    }else if(/\w\W+\w/.test(word)){ // if any non charater is in between
+      const splitted = word.split(/\W+/);
+      if(splitted.length <= 2){
+        const firstLength = splitted[0].length;
+        const secondLength = splitted[1].length;
+        if(firstLength > secondLength){
+          end = start + firstLength;
+        }else if(firstLength< secondLength){
+          start = end -secondLength;
+        }else{
+          end = start + firstLength;
+        }
+      }else if(splitted.length == 3){
+        const firstLength = splitted[0].length;
+        const thirdLength = splitted[2].length;
+        start = start + firstLength + 1;
+        end = end - thirdLength - 1;
+      }else{
+        return false;
+      }
+    }
+    return [start,end];
+  }
+
+
   function makePlural(view) {
     const {state} = view;
     let [start,end,word,line,lineText] = getWordWithPos(state);
@@ -183,7 +211,7 @@ export function YamlEditor({
     yaml,
     lintGutter(),
     yamlLinter,
-    EditorState.readOnly.of(readOnly),
+    // EditorState.readOnly.of(readOnly),
     EditorView.lineWrapping,
     // EditorState.allowMultipleSelections.of(true),
     // keymap.of(defaultKeymap),
@@ -209,10 +237,6 @@ export function YamlEditor({
     ],}),
   ]
 
-  if(!readOnly){
-    extensions.push(foldOnIndent())
-  }
-
   const hanleKeyPress = (event) => {
     if ((event.ctrlKey) && (event.key === 's' || event.key === 'S')) {
       event.preventDefault();
@@ -222,38 +246,6 @@ export function YamlEditor({
 
   const handleKeyUp = (e) => {
     if (e.key === '[' ) {}
-  };
-
-  const handleDoubleClick = (event) => {
-    const view = editorRef.current?.view;
-    if (view) {
-      const { state } = view;
-      const pos = view.posAtCoords({ x: event.clientX, y: event.clientY });
-      if (pos !== null) {
-        const line = state.doc.lineAt(pos);
-        // Get the text of the line
-        const lineText = line.text;
-        // Get the position within the line
-        const posInLine = pos - line.from;
-        // Find the word boundaries
-        let start = lineText.lastIndexOf(' ', posInLine - 1) + 1;
-        let end = lineText.indexOf(' ', posInLine);
-        if(end == -1){ end = lineText.length; }
-        // Get word pos in doc
-        let word = lineText.slice(start, end);
-
-        if(/\W$/.test(word)){  // if any non charater is at the end
-          end = end-1
-         }else if(/^\W/.test(word)){ // if any non charater is at the start
-          start = start+1
-        }
-        word = lineText.slice(start, end);
-
-        const startInDoc = line.from + start;
-        const endInDoc = line.from + end;
-        createSuggestionButton(word,startInDoc,endInDoc);
-      }
-    }
   };
 
   const createSuggestionButton = (word,startInDoc,endInDoc) => {
@@ -276,20 +268,18 @@ export function YamlEditor({
     if (view) {
       const {state} = view;
       let [start,end,word,line,lineText] = getWordWithPos(state);
-  
-      if(/\W$/.test(word)){  // if any non charater is at the end
-        end = end-1
-       }else if(/^\W/.test(word)){ // if any non charater is at the start
-        start = start+1
-      }else if(/\w\W+\w/.test(word)){ // if any non charater is in between
+      const start_end = handleSymbolInWord(word,start,end);
+      if(start_end){
+        start = start_end[0];
+        end = start_end[1];
+      }else {
+        setButtons([]);
         return false;
       }
-  
       // Get word pos in doc
       const startInDoc = line.from + start;
       const endInDoc = line.from + end;
       word = lineText.slice(start, end);
-
       createSuggestionButton(word,startInDoc,endInDoc);
       return true;
     }
@@ -300,15 +290,14 @@ export function YamlEditor({
     if (view) {
       const {state} = view;
       let [start,end,word,line,lineText] = getWordWithPos(state);
-  
-      if(/\W$/.test(word)){  // if any non charater is at the end
-        end = end-1
-       }else if(/^\W/.test(word)){ // if any non charater is at the start
-        start = start+1
-      }else if(/\w\W+\w/.test(word)){ // if any non charater is in between
+      const start_end = handleSymbolInWord(word,start,end);
+      if(start_end){
+        start = start_end[0];
+        end = start_end[1];
+      }else {
+        setButtons([]);
         return false;
       }
-  
       // Get word pos in doc
       const startInDoc = line.from + start;
       const endInDoc = line.from + end;
@@ -333,6 +322,9 @@ export function YamlEditor({
     }else if(target == 'yourself'){
       regex = /\b[Yy]ourself\b/g;
       value = '{{themself}}';
+    }else if(target == 'have'){
+      regex = /\bhave\b/g;
+      value = '{{has_have}}';
     }else{ return;}
     if(view){
       const matches = [...data.matchAll(regex)].reverse();
@@ -386,6 +378,7 @@ export function YamlEditor({
         <div className="buttons">
           <button className="button-19" onClick={() => findAndReplace('your')}>Your-Their</button>
           <button className="button-19" onClick={() => findAndReplace('yourself')}>YourSelf-ThemSelf</button>
+          <button className="button-19" onClick={() => findAndReplace('have')}>Has-Have</button>
           <button className="button-19" onClick={() => findRegex('timeline')}>TimeLine</button>
           <button className="button-19" onClick={() => findRegex('planet')}>Planet</button>
           {
@@ -399,10 +392,10 @@ export function YamlEditor({
       <span>{yamlError}</span>
       <CodeMirror
         ref={editorRef}
-        height= {readOnly ? '200px' : null}
+        // height= {readOnly ? '200px' : null}
         onChange={_onChange}
         value={data}
-        theme={ readOnly? githubDark : githubLight}
+        // theme={ readOnly? githubDark : githubLight}
         extensions={extensions}
         onKeyDown={hanleKeyPress}
         onKeyUp={handleKeyUp}

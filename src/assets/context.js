@@ -124,6 +124,13 @@ const partialContextSuggestion = {
   }
   
   const contextSuggestion = {
+    "scope_algorithm": {
+      "result": [],
+      "has_result": true,
+      "result_count": 2,
+      "scope": "planet",
+      "top_result": "Jupiter"
+  },
     "activation_strength": {
         "activated_planets": [],
         "top_activated_planets": [],
