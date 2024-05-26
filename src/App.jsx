@@ -77,7 +77,7 @@ const changeYamlData = (value,cTab) => {
 }
 
 const updateWordCount = (value) => {
-  const words = value.split(/([-:_' ]| is |\bshe \| he\b|\bher \| his\b|\her \| him\b|s*friend|\bgirlfriend \| boyfriend\b|\bwife \| husband\b)/);
+  const words = value.split(/([-:_' \n]| is |\bshe \| he\b|\bher \| his\b|\her \| him\b|s*friend|\bgirlfriend \| boyfriend\b|\bwife \| husband\b)/);
   let _wordCount = {...defaultWordCount};
   words.forEach((word)=>{
     if(Object.keys(_wordCount).includes(word)){
