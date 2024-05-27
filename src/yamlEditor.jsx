@@ -195,12 +195,21 @@ export function YamlEditor({
     const startInDoc = line.from + start;
     const endInDoc = line.from + end;
     word = lineText.slice(start, end);
-    if(word.length != 0){ return false; }
-
-    // replace the word
+    let targetFromTo = startInDoc;
+    if(word.length > 0){
+      if(end+1> lineText.length){ 
+        targetFromTo = startInDoc;
+       }else{
+        const slicedText = lineText.slice(end, end+1)
+        console.log('slicedTexte',slicedText == ' ')
+        if(lineText.slice(end, end+1) == ' '){ 
+          targetFromTo = endInDoc;
+         }else { return false; }
+      }
+    }
     const replaceWord = `{{#has_suggestions }}`;
-    view.dispatch({changes: { from: startInDoc,to: startInDoc,insert: replaceWord }})
-    view.dispatch({selection: {anchor: startInDoc+replaceWord.length}, userEvent: "select",scrollIntoView: true})
+    view.dispatch({changes: { from: targetFromTo,to: targetFromTo,insert: replaceWord }})
+    view.dispatch({selection: {anchor: targetFromTo+replaceWord.length}, userEvent: "select",scrollIntoView: true})
     return true;
   }
 
