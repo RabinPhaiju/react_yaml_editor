@@ -104,6 +104,10 @@ const createSuggestionList = (pWord,startInDoc,endInDoc) => {
         {
           start:startInDoc,end:endInDoc,
           label: 'period_in_words',apply:'{{timeline.period_in_words}}',
+        },
+        {
+          start:startInDoc,end:endInDoc,
+          label: 'limit_in_words',apply:'{{timeline.limit_in_words}}',
         }
       ]
     }else if(word == 'planet'){

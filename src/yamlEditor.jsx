@@ -195,11 +195,11 @@ export function YamlEditor({
     const startInDoc = line.from + start;
     const endInDoc = line.from + end;
     word = lineText.slice(start, end);
-    if(word.length == 0){ return false; }
+    if(word.length != 0){ return false; }
 
     // replace the word
-    const replaceWord = `{{#has_suggestion }}`;
-    view.dispatch({changes: { from: startInDoc,to: endInDoc,insert: replaceWord }})
+    const replaceWord = `{{#has_suggestions }}`;
+    view.dispatch({changes: { from: startInDoc,to: startInDoc,insert: replaceWord }})
     view.dispatch({selection: {anchor: startInDoc+replaceWord.length}, userEvent: "select",scrollIntoView: true})
     return true;
   }
