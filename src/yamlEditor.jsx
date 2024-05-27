@@ -190,6 +190,9 @@ export function YamlEditor({
   function inputHasSuggestion(view) {
     const {state} = view;
     let [start,end,word,line,lineText] = getWordWithPos(state);
+    const mainWord = state.selection.main
+    const pos = mainWord.from
+    const posInLine = pos - line.from;
 
     // Get word pos in doc
     const startInDoc = line.from + start;
@@ -197,14 +200,10 @@ export function YamlEditor({
     word = lineText.slice(start, end);
     let targetFromTo = startInDoc;
     if(word.length > 0){
-      if(end+1> lineText.length){ 
+      if(posInLine == start){
         targetFromTo = startInDoc;
-       }else{
-        const slicedText = lineText.slice(end, end+1)
-        console.log('slicedTexte',slicedText == ' ')
-        if(lineText.slice(end, end+1) == ' '){ 
-          targetFromTo = endInDoc;
-         }else { return false; }
+      }else if(start<posInLine){
+        targetFromTo = endInDoc;
       }
     }
     const replaceWord = `{{#has_suggestions }}`;
@@ -222,7 +221,6 @@ export function YamlEditor({
   }
 
   const makeAltActon = (index,buttons) => (view) => {
-    console.log(buttons)
     if(index > buttons.length){ return false; }
     const button = buttons[index-1];
     let start = button.start;
