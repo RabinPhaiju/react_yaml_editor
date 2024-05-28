@@ -34,6 +34,9 @@
   padding: 2px;
   flex: 1;
   min-width: 100px;
+  position: sticky;
+  top: 30px;
+  align-self: flex-start;
 }
 
 .toogle-word-count{
