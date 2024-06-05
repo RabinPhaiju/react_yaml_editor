@@ -351,9 +351,6 @@ export function YamlEditor({
     }else if(target == 'yourself'){
       regex = /\b[Yy]ourself\b/g;
       value = '{{themself}}';
-    }else if(target == 'have'){
-      regex = /\bhave\b/g;
-      value = '{{has_have}}';
     }else{ return;}
     if(view){
       const matches = [...data.matchAll(regex)].reverse();
@@ -410,7 +407,6 @@ export function YamlEditor({
         <div className="buttons">
           <button className="button-19" onClick={() => findAndReplace('your')}>Your-Their</button>
           <button className="button-19" onClick={() => findAndReplace('yourself')}>YourSelf-ThemSelf</button>
-          <button className="button-19" onClick={() => findAndReplace('have')}>Has-Have</button>
           <button className="button-19" onClick={() => findRegex('timeline')}>TimeLine</button>
           <button className="button-19" onClick={() => findRegex('planet')}>Planet</button>
           {

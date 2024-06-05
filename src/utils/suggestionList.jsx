@@ -19,6 +19,13 @@ const createSuggestionList = (pWord,startInDoc,endInDoc) => {
           label: 'them-them',apply:'{{#conditional}} {{is_self}}  : {{them}} | them {{/conditional}}',
         }
       ];
+    }else if(word == 'have'){
+      buttons = [
+        {
+          start:startInDoc,end:endInDoc,
+          label: 'has_have',apply:'{{has_have}}',
+        }
+      ]
     }else if(word == "you're"){
       buttons = [
         { start:startInDoc,end: endInDoc,
@@ -97,6 +104,27 @@ const createSuggestionList = (pWord,startInDoc,endInDoc) => {
         {
           start:startInDoc,end:endInDoc,
           label: 'wife_husband',apply:'{{#conditional}} {{is_gender_male}}  : wife | husband {{/conditional}}',
+        }
+      ]
+    }else if(word == 'man' || word == 'woman'){
+      buttons = [
+        {
+          start:startInDoc,end:endInDoc,
+          label: 'woman_man',apply:'{{#conditional}} {{is_gender_male}}  : woman | man {{/conditional}}',
+        }
+      ]
+    }else if(word == 'guy'){
+      buttons = [
+        {
+          start:startInDoc,end:endInDoc,
+          label: 'girl_guy',apply:'{{#conditional}} {{is_gender_male}}  : girl | guy {{/conditional}}',
+        }
+      ]
+    }else if(word == 'female' || word == 'male'){
+      buttons = [
+        {
+          start:startInDoc,end:endInDoc,
+          label: 'female_male',apply:'{{#conditional}} {{is_gender_male}}  : female | male {{/conditional}}',
         }
       ]
     }else if(word == 'timeline'){
