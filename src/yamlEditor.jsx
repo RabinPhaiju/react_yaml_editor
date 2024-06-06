@@ -13,7 +13,7 @@ import {autocompletion} from "@codemirror/autocomplete";
 import plur from 'plur';
 import myCompletions from "./utils/myCompletions";
 import createSuggestionList from "./utils/suggestionList";
-import {planets,createPlanetsRegex,getTimeLineRegex, certainMonths} from "./utils/utils";
+import {createPlanetsRegex,getTimeLineRegex1,getTimeLineRegex2, certainMonths} from "./utils/utils";
 // import isBracketsBalanced from "./checkBracketsBalanced";
 
 const yaml = StreamLanguage.define(yamlMode.yaml);
@@ -366,9 +366,9 @@ export function YamlEditor({
     const view = editorRef.current?.view;
     let regex = '';
     if(target == 'timeline'){
-      regex = getTimeLineRegex
+      regex = getTimeLineRegex1
     }else if(target == 'planet'){
-      regex = createPlanetsRegex(planets);
+      regex = createPlanetsRegex();
     }else { return; }
     setButtons([]);
 
@@ -376,6 +376,9 @@ export function YamlEditor({
       let matches = [...data.matchAll(regex)];
       if(matches.length == 0 && target == 'timeline'){
           matches = [...data.matchAll(certainMonths)];
+          if(matches.length == 0){
+            matches = [...data.matchAll(getTimeLineRegex2)];
+          }
        }
       const firstMatch = matches[0];
       if(firstMatch){
