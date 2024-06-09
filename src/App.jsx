@@ -17,7 +17,7 @@ const [privateData, setPrivateData] = useLocalStorage("private", template2)
 const [data, setData] = useLocalStorage("data",template3);
 const [currentTab,setCurrentTab] = useLocalStorage("tab", "public");
 const [toogleWordCount,setToogleWordCount] = useLocalStorage("word-count", false);
-const defaultWordCount = {"you":0,"he":0,"his":0,"him":0,"friend":0,"husband":0,"wife":0}
+const defaultWordCount = {"you":0,"he":0,"his":0,"him":0,"friend":0,"husband":0,"wife":0,"son":0}
 const [wordCount,setWordCount] = useState(defaultWordCount)
 const [wordCountToogle,setWordCountToogle] = useLocalStorage("word-count-toogle", false);
 const  updateSuggestions =((context,partial_context,externalLink) => {
@@ -93,7 +93,7 @@ const handleCheckCount = () => {
 }
 
 const updateWordCount = (value) => {
-  const words = value.split(/([-:_'. \n]| is |\bshe \| he\b|\bher \| his\b|\her \| him\b|s*friend\b|\bgirlfriend \| boyfriend\b|\bwife \| husband\b)/);
+  const words = value.split(/([-:_'., \n]| is |\bshe \| he\b|\bher \| his\b|\her \| him\b|s*friend\b|\bgirlfriend \| boyfriend\b|\bdaughter \| son\b|\bwife \| husband\b)/);
   let _wordCount = {...defaultWordCount};
   words.forEach((word)=>{
     if(Object.keys(_wordCount).includes(word.toLowerCase())){

@@ -99,6 +99,13 @@ const createSuggestionList = (pWord,startInDoc,endInDoc) => {
           label: 'girl-boy',apply:'{{#conditional}} {{is_gender_male}}  : girlfriend | boyfriend {{/conditional}}',
         }
       ]
+    }else if(word == 'daughter' || word == 'son'){
+      buttons = [
+        {
+          start:startInDoc,end:endInDoc,
+          label: 'daughter-son',apply:'{{#conditional}} {{is_gender_male}}  : daughter | son {{/conditional}}',
+        }
+      ]
     }else if(word == 'wife' || word == 'husband'){
       buttons = [
         {
