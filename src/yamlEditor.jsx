@@ -346,8 +346,11 @@ export function YamlEditor({
     let regex = ''
     let value = ''
     if(target == 'your'){
-      regex = /\b[Yy]our(?!self\b)/g;
+      regex = /\b[Yy]our\b/g;
       value = '{{their}}';
+    }else if(target == 'yours'){
+      regex = /\b[Yy]ours\b/g;
+      value = '{{theirs}}';
     }else if(target == 'yourself'){
       regex = /\b[Yy]ourself\b/g;
       value = '{{themself}}';
@@ -409,6 +412,7 @@ export function YamlEditor({
       <div className="actions">
         <div className="buttons">
           <button className="button-19" onClick={() => findAndReplace('your')}>Your-Their</button>
+          <button className="button-19" onClick={() => findAndReplace('yours')}>Yours-Theirs</button>
           <button className="button-19" onClick={() => findAndReplace('yourself')}>YourSelf-ThemSelf</button>
           <button className="button-19" onClick={() => findRegex('timeline')}>TimeLine</button>
           <button className="button-19" onClick={() => findRegex('planet')}>Planet</button>
