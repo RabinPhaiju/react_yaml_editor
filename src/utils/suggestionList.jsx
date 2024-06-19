@@ -26,7 +26,7 @@ const createSuggestionList = (pWord,startInDoc,endInDoc) => {
           label: 'has_have',apply:'{{has_have}}',
         }
       ]
-    }else if(word == "you're"){
+    }else if(word == "you're" || word == "you’re"){
       buttons = [
         { start:startInDoc,end: endInDoc,
           label: "you're",apply:'{{they}} {{is_are}}',
@@ -35,7 +35,7 @@ const createSuggestionList = (pWord,startInDoc,endInDoc) => {
           label: "native're",apply:'{{native}} {{is_are}}',
         }
       ]
-    }else if(word == "you've"){
+    }else if(word == "you've" || word == "you’ve"){
       buttons = [
         { start:startInDoc,end: endInDoc,
           label: "you've",apply:'{{they}} {{has_have}}',

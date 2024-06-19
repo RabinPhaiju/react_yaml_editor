@@ -93,7 +93,7 @@ const handleCheckCount = () => {
 }
 
 const updateWordCount = (value) => {
-  const words = value.split(/([-:_'., \n]| is |\bshe \| he\b|\bher \| his\b|\her \| him\b|s*friend\b|\bgirlfriend \| boyfriend\b|\bdaughter \| son\b|\bwife \| husband\b|\bwoman \| man\b)/);
+  const words = value.split(/([-:_'’., \n]| is |\bshe \| he\b|\bher \| his\b|\her \| him\b|s*friend\b|\bgirlfriend \| boyfriend\b|\bdaughter \| son\b|\bwife \| husband\b|\bwoman \| man\b)/);
   let _wordCount = {...defaultWordCount};
   words.forEach((word)=>{
     if(Object.keys(_wordCount).includes(word.toLowerCase())){

@@ -137,7 +137,16 @@ export function YamlEditor({
       end = end-1
     }else if(/^\W/.test(word)){ // if any non charater is at the start
       start = start+1
-    }else if(word == "you're" || word == "you've"){ // custom rules
+    }else if(
+      word == "you're" || 
+      word == "you've" || 
+      word == "You're" || 
+      word == "You've" ||
+      word == "you’re" || 
+      word == "you’ve" || 
+      word == "You’re" || 
+      word == "You’ve"
+    ){ // custom rules
     }else if(/\w\W+\w/.test(word)){ // if any non charater is in between
       const splitted = word.split(/\W+/);
       if(splitted.length <= 2){
