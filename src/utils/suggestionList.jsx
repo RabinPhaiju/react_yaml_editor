@@ -50,6 +50,12 @@ const createSuggestionList = (pWord,startInDoc,endInDoc) => {
           label: 'she_he',apply:'{{#conditional}} {{is_gender_male}}  : she | he {{/conditional}}',
         }
       ];
+    }else if(word == 'himself' || word == 'herself'){
+      buttons = [
+        { start:startInDoc,end: endInDoc,
+          label: 'himself_herself',apply:'{{#conditional}} {{is_gender_male}}  : herself | himself {{/conditional}}',
+        }
+      ];
     }else if(word == 'is' || word == 'are'){
       buttons = [
         { start:startInDoc,end: endInDoc,

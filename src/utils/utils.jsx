@@ -6,13 +6,20 @@ const getTimeLineRegex2 = new RegExp(`\\b${monthPattern} \\d{1,2},? \\d{4},? \\b
 
 const certainMonths = /\b(one|two|three|four|five|six|seven|eight|nine) months?\b/gi;
 
+
+const planetPattern = planets.map(planet => planet).join('|');
+const separatorPattern = `(?:,\\s*|\\s+and\\s+|\\s+)+`;
+const optionalThePattern = `(?:the\\s+)?`;
+
 function createPlanetsRegex() {
-    const planetPattern = planets.map(planet => planet).join('|');
-    const separatorPattern = `(?:,\\s*|\\s+and\\s+|\\s+)+`;
-    const optionalThePattern = `(?:the\\s+)?`;
     // const regexPattern = `\\b(${planetPattern})${separatorPattern}(${planetPattern})?${separatorPattern}(${planetPattern})\\b`;
     const regexPattern = `\\b${optionalThePattern}(${planetPattern})${separatorPattern}${optionalThePattern}(${planetPattern})?${separatorPattern}${optionalThePattern}(${planetPattern})\\b`;
-    return new RegExp(regexPattern, 'g');
+    return new RegExp(regexPattern, 'gi');
   }
 
-  export {planets,createPlanetsRegex,getTimeLineRegex1,getTimeLineRegex2,certainMonths}
+  function createPlanetsRegex2() {
+    const regexPattern = `\\b(${planetPattern})${separatorPattern}(${planetPattern})\\b`;
+    return new RegExp(regexPattern, 'gi');
+  }
+
+  export {planets,createPlanetsRegex,createPlanetsRegex2,getTimeLineRegex1,getTimeLineRegex2,certainMonths}

@@ -13,7 +13,7 @@ import {autocompletion} from "@codemirror/autocomplete";
 import plur from 'plur';
 import myCompletions from "./utils/myCompletions";
 import createSuggestionList from "./utils/suggestionList";
-import {createPlanetsRegex,getTimeLineRegex1,getTimeLineRegex2, certainMonths} from "./utils/utils";
+import {createPlanetsRegex,getTimeLineRegex1,getTimeLineRegex2, certainMonths, createPlanetsRegex2} from "./utils/utils";
 // import isBracketsBalanced from "./checkBracketsBalanced";
 
 const yaml = StreamLanguage.define(yamlMode.yaml);
@@ -133,10 +133,12 @@ export function YamlEditor({
   }
 
   const handleSymbolInWord = (word,start,end) => {
-    if(/\W$/.test(word)){  // if any non charater is at the end
-      end = end-1
-    }else if(/^\W/.test(word)){ // if any non charater is at the start
-      start = start+1
+    if(word.match(/\W{1,3}$/)){  // if any non charater is at the end
+      const match = word.match(/\W{1,3}$/);
+      end -= match[0].length;
+    }else if(word.match(/^\W{1,3}/)){ // if any non charater is at the start
+      const match = word.match(/^\W{1,3}/);
+      start += match[0].length;
     }else if(
       word == "you're" || 
       word == "you've" || 
@@ -391,6 +393,8 @@ export function YamlEditor({
           if(matches.length == 0){
             matches = [...data.matchAll(getTimeLineRegex2)];
           }
+       }else if(matches.length == 0 && target == 'planet'){
+        matches = [...data.matchAll(createPlanetsRegex2())];
        }
       const firstMatch = matches[0];
       if(firstMatch){
